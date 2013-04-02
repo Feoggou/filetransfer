@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileTransferApp", "FileTransferApp\FileTransferApp.vcxproj", "{16FAB03E-0CCD-42F9-B0F6-DBA30E1DE8AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16FAB03E-0CCD-42F9-B0F6-DBA30E1DE8AF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{16FAB03E-0CCD-42F9-B0F6-DBA30E1DE8AF}.Debug|Win32.Build.0 = Debug|Win32
+		{16FAB03E-0CCD-42F9-B0F6-DBA30E1DE8AF}.Release|Win32.ActiveCfg = Release|Win32
+		{16FAB03E-0CCD-42F9-B0F6-DBA30E1DE8AF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
