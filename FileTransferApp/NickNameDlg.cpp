@@ -72,6 +72,5 @@ void NickNameDlg::OnOK()
 		return;
 	}
 
-	//if OK was pressed, OK we return!
-	EndDialog(m_hWnd, IDOK);
+	OnOK();
 }

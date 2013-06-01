@@ -22,14 +22,17 @@ INT_PTR CALLBACK Dialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 	if (uMsg == WM_INITDIALOG) {
 		//save pThis for further use and save hDlg for use in the class functions
-		Dialog* pThis = (Dialog*)lParam;
+		pThis = (Dialog*)lParam;
 		pThis->SetHandle(hDlg);
 		dialogs.insert(pThis);
 	} else {
-		std::set<Dialog*>::iterator i = std::find(std::begin(dialogs), std::end(dialogs), pThis);
-		_ASSERT(i != std::end(dialogs));
+		std::set<Dialog*>::iterator i = std::find_if(std::begin(dialogs), std::end(dialogs), [hDlg](Dialog* p) {return p->GetHandle() == hDlg;});
 
-		pThis = *i;
+		if (i != std::end(dialogs)) {
+			pThis = *i;
+		} else {
+			return 0;
+		}
 	}
 
 	switch (uMsg)
