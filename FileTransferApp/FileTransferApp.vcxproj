@@ -87,6 +87,8 @@
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="DestFile.cpp" />
     <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="FilePicker.cpp" />
+    <ClCompile Include="FolderPicker.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NickNameDlg.cpp" />
@@ -107,6 +109,8 @@
     <ClInclude Include="DestFile.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="FilePicker.h" />
+    <ClInclude Include="FolderPicker.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="MainDlg.h" />
     <ClInclude Include="General.h" />

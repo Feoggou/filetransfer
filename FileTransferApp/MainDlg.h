@@ -69,25 +69,9 @@ private:
 	//updates the UI after the connection has been closed
 	void UpdateUIDisconnected();
 
-#if _WIN32_WINNT == _WIN32_WINNT_VISTA
-#define PickFile	PickFileVista
-#define PickFolder	PickFolderVista
-
-	//displays a Vista-compatible dialogbox that allows the user to select a file to send to the other computer
-	static void PickFileVista();
+	static void PickFile(HWND hDlg);
 	//displays a Vista-compatible dialogbox that allows the user to select a folder to send to the other computer
-	static void PickFolderVista();
-
-#else
-
-#define PickFile	PickFileXP
-#define PickFolder	PickFolderXP
-
-	//displays an XP-compatible dialogbox that allows the user to select a file to send to the other computer
-	static void PickFileXP(HWND hDlg);
-	//displays an XP-compatible dialogbox that allows the user to select a file to send to the other computer
-	static void PickFolderXP(HWND hDlg);
-#endif
+	static void PickFolder(HWND hDlg);
 
 private:
 	void OnClose() override;

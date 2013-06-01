@@ -9,6 +9,8 @@
 #include "Send.h"
 
 #include "NickNameDlg.h"
+#include "FilePicker.h"
+#include "FolderPicker.h"
 
 //#include <cmath>
 
@@ -327,310 +329,48 @@ void MainDlg::OnBrowse()
 	}
 }
 
-#if _WIN32_WINNT == 0x0600
-void MainDlg::PickFileVista(HWND hDlg)
+void MainDlg::PickFile(HWND hDlg)
 {
-	//create a IFileOpenDialog object
-	IFileOpenDialog* pDlg;
-	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, (void**)&pDlg);
-	if (FAILED(hr))
-	{
-		DisplayError(hr);
-		return;
-	}
+	std::wstring result = FilePicker(hDlg)();
 
-	//we need the ITEMIDLIST of the desktop so we would create a shell item from it
-	ITEMIDLIST* pidlDesktop;
-	hr = SHGetKnownFolderIDList(FOLDERID_Desktop, 0, 0, &pidlDesktop);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
+	if (!result.empty()) {
+		//doing what we need with it.
+		Send::itemType = ItemType::File;
 
-		DisplayError(hr);
-		return;
-	}
+		//retrieve the selected item (as path)
+		int len = result.length();
+		len++;
 
-	//create the shell item
-	IShellItem* pShellItem;
-	hr = SHCreateItemFromIDList(pidlDesktop, IID_IShellItem, (void**)&pShellItem);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
-		CoTaskMemFree(pidlDesktop);
+		//we store the result in Send::wsParentFileName
+		if (Send::wsParentFileName) delete[] Send::wsParentFileName;
+		Send::wsParentFileName = new WCHAR[len];
+		StringCopy(Send::wsParentFileName, result.data());
 
-		DisplayError(hr);
-		return;
-	}
-
-	//we don't need the ITEMIDLIST anymore, so we free it.
-	CoTaskMemFree(pidlDesktop);
-
-	//set the default folder: the desktop
-	pDlg->SetDefaultFolder(pShellItem);
-	pDlg->SetOptions(FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST); 
-
-	//show the dialogbox
-	hr = pDlg->Show(m_hWnd);
-	//if error or canceled
-	if (FAILED(hr))
-	{
-		pShellItem->Release();
-		pDlg->Release();
-
-		if (hr != HRESULT_FROM_WIN32(ERROR_CANCELLED))
-			DisplayError(hr);
-		return;
-	}
-	//we don't need the desktop shell item, so we release it
-	pShellItem->Release();
-
-	//we store the result of the dialogbox in the shell item.
-	hr = pDlg->GetResult(&pShellItem);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
-
-		DisplayError(hr);
-		return;
-	}
-
-	//we retrieve the displayname of the chosen item.
-	WCHAR* wsFileName;
-	pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &wsFileName);
-
-	//we don't need the shell item retrieved and we don't need the dialogbox.
-	pShellItem->Release();
-	pDlg->Release();
-
-	//saving info regarding the chosen item (file/folder)
-	Send::itemType = ItemType::File;
-
-	int len = StringLen(wsFileName);
-	len++;
-
-	//we store the filename in Send::wsParentFileName
-	if (Send::wsParentFileName) delete[] Send::wsParentFileName;
-	Send::wsParentFileName = new WCHAR[len];
-	StringCopy(Send::wsParentFileName, wsFileName);
-	//we don't need wsFileName any more
-	CoTaskMemFree(wsFileName);
-
-	//the wsParentFileDisplayName SHOULD NOT BE DELETED: it's only a pointer within wsParentFileName
-	Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
-	Send::wsParentFileDisplayName++;
-
-	//ok, we display the full file name in the editbox and enable the "Send" and "Repair" buttons
-	SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
-	EnableWindow(m_hButtonSend, true);
-	EnableWindow(m_hCheckRepairMode, false);
-}
-
-void MainDlg::PickFolderVista(HWND hDlg)
-{
-	//we create a IFileOpenDialog object
-	IFileOpenDialog* pDlg;
-	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, (void**)&pDlg);
-	if (FAILED(hr))
-	{
-		DisplayError(hr);
-		return;
-	}
-
-	//we retrieve the ITEMIDLIST of the desktop, so we would get its shell item
-	ITEMIDLIST* pidlDesktop;
-	hr = SHGetKnownFolderIDList(FOLDERID_Desktop, 0, 0, &pidlDesktop);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
-
-		DisplayError(hr);
-		return;
-	}
-
-	//we retrieve the shell item of the desktop
-	IShellItem* pShellItem;
-	hr = SHCreateItemFromIDList(pidlDesktop, IID_IShellItem, (void**)&pShellItem);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
-		CoTaskMemFree(pidlDesktop);
-
-		DisplayError(hr);
-		return;
-	}
-
-	//ok, we don't need the ITEMIDLIST anymore, so we free it.
-	CoTaskMemFree(pidlDesktop);
-
-	//we set the desktop as the default directory.
-	pDlg->SetDefaultFolder(pShellItem);
-	pDlg->SetOptions(FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST | FOS_PICKFOLDERS); 
-
-	//show the dialogbox and retrieve the result
-	hr = pDlg->Show(m_hWnd);
-	//error or canceled
-	if (FAILED(hr))
-	{
-		pShellItem->Release();
-		pDlg->Release();
-
-		if (hr != HRESULT_FROM_WIN32(ERROR_CANCELLED))
-			DisplayError(hr);
-		return;
-	}
-	//we don't need the desktop shell item anymore
-	pShellItem->Release();
-
-	//we retrieve the selected item as shell item
-	hr = pDlg->GetResult(&pShellItem);
-	if (FAILED(hr))
-	{
-		pDlg->Release();
-
-		DisplayError(hr);
-		return;
-	}
-
-	//we retrieve the full file name of the selected item
-	WCHAR* wsFileName;
-	pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &wsFileName);
-
-	//we don't need the selected shell item and the dialogbox anymore
-	pShellItem->Release();
-	pDlg->Release();
-
-	//we store the info we need
-	Send::itemType = ItemType::Folder;
-
-	int len = StringLen(wsFileName);
-	len++;
-
-	//Send::wsParentFileName will store the selected item
-	if (Send::wsParentFileName) delete[] Send::wsParentFileName;
-	Send::wsParentFileName = new WCHAR[len];
-	StringCopy(Send::wsParentFileName, wsFileName);
-	//we don't need wsFileName anymore
-	CoTaskMemFree(wsFileName);
-
-	//Send::wsParentFileDisplayName SHOULD NOT BE DELETED: it is only a pointer witin Send::wsParentFileName
-	Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
-	if (Send::wsParentFileDisplayName)
+		//wsParentFileDisplayName SHOULD NOT BE DELETED: it is a pointer within Send::wsParentFileName
+		Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
 		Send::wsParentFileDisplayName++;
 
-	//we display the full file name of the selected item into the editbox and enable the "Send" and "Repair" buttons
-	SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
-	EnableWindow(m_hButtonSend, true);
-	EnableWindow(m_hCheckRepairMode, true);
-}
-
-#else
-
-void MainDlg::PickFileXP(HWND hDlg)
-{
-	//we need a GetOpenFileName to retrieve a file
-	OPENFILENAME ofn = {0};
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hDlg;
-	ofn.hInstance = Application::GetHInstance();
-	ofn.lpstrFile = new WCHAR[2000];
-	*ofn.lpstrFile = 0;
-	ofn.nMaxFile = 2000;
-	ofn.Flags = OFN_FILEMUSTEXIST;
-
-	//display the dialogbox and retrieve the result
-	if (false == GetOpenFileName(&ofn))
-	{
-		DWORD dwError =  CommDlgExtendedError();
-		//either error or canceled
-		if (dwError)
-		{
-			WCHAR wsError[500];
-			LoadStringW(Application::GetHInstance(), dwError, wsError, 500);
-			MessageBox(hDlg, wsError, 0, MB_ICONERROR);
-		}
-		delete[] ofn.lpstrFile;
-		return;
+		//we set the full file name into the editbox and enable the "Send" and "Repair" buttons.
+		SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
+		EnableWindow(m_hButtonSend, true);
+		EnableWindow(m_hCheckRepairMode, false);
 	}
-
-	//doing what we need with it.
-	Send::itemType = ItemType::File;
-
-	//retrieve the selected item (as path)
-	int len = StringLen(ofn.lpstrFile);
-	len++;
-
-	//we store the result in Send::wsParentFileName
-	if (Send::wsParentFileName) delete[] Send::wsParentFileName;
-	Send::wsParentFileName = new WCHAR[len];
-	StringCopy(Send::wsParentFileName, ofn.lpstrFile);
-	//we don't need ofn.lpstrFile anymore
-	delete[] ofn.lpstrFile;
-
-	//wsParentFileDisplayName SHOULD NOT BE DELETED: it is a pointer within Send::wsParentFileName
-	Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
-	Send::wsParentFileDisplayName++;
-
-	//we set the full file name into the editbox and enable the "Send" and "Repair" buttons.
-	SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
-	EnableWindow(m_hButtonSend, true);
-	EnableWindow(m_hCheckRepairMode, false);
 }
 
-void MainDlg::PickFolderXP(HWND hDlg)
+void MainDlg::PickFolder(HWND hDlg)
 {	
-	//we need Shell Browser for this.
-	BROWSEINFOW bi = {0};
-	bi.hwndOwner = hDlg;
-	bi.lpszTitle = L"Chose the folder you wish to send:";
-	bi.ulFlags = BIF_EDITBOX;
-	bi.pszDisplayName = new WCHAR[MAX_PATH];
+	std::wstring result = FolderPicker(hDlg)();
 
-	//the result is stored in pidlResult
-	ITEMIDLIST* pidlResult;
-try_again:
-	pidlResult = SHBrowseForFolderW(&bi);
-	//if a result
-	if (pidlResult != 0)
-	{
-		//we retrieve the item as a shellitem so we would get its displayname
-		IShellItem* pShellItem;
-		HRESULT hr = SHCreateShellItem(0, 0, pidlResult, &pShellItem);
-		if (FAILED(hr))
-		{
-			delete[] bi.pszDisplayName;
-			CoTaskMemFree(pidlResult);
-
-			DisplayError(hr);
-			return;
-		}
-
-		//we retrieve the filesyspath of the selected item. failure if the selected item
-		//is not part of the FILE SYSTEM!
-		WCHAR* wsFullName;
-		hr = pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &wsFullName);
-		if (FAILED(hr))
-		{
-			CoTaskMemFree(pidlResult);
-			pShellItem->Release();
-
-			MessageBox(hDlg, L"Invalid selection. Chose a directory or a drive!", L"Invalid selection!", MB_ICONWARNING);
-			goto try_again;
-		}
-
-		//we don't need the shell item anymore
-		pShellItem->Release();
-
+	if (!result.empty()) {
 		//ok, so the selection is ok. we fill the info
 		Send::itemType = ItemType::Folder;
-		int len = StringLen(wsFullName);
+		int len = result.length();
 		len++;
 
 		//we store the file name into Send::wsParentFileName 
 		if (Send::wsParentFileName) delete[] Send::wsParentFileName;
 		Send::wsParentFileName = new WCHAR[len];
-		StringCopy(Send::wsParentFileName, wsFullName);
-		//we don't need wsFullName anymore
-		CoTaskMemFree(wsFullName);
+		StringCopy(Send::wsParentFileName, result.data());
 		
 		//Send::wsParentFileDisplayName SHOULD NOT BE DELETED: it is only a pointer within Send::wsParentFileName
 		Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
@@ -641,14 +381,8 @@ try_again:
 		SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
 		EnableWindow(m_hButtonSend, true);
 		EnableWindow(m_hCheckRepairMode, true);
-
 	}
-	//we don't need the displayname and the pidlResult anymore
-	delete[] bi.pszDisplayName;
-	if (pidlResult) CoTaskMemFree(pidlResult);
 }
-
-#endif
 
 void MainDlg::CloseAll()
 {

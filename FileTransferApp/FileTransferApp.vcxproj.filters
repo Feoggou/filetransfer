@@ -70,6 +70,12 @@
     <ClCompile Include="Dialog.cpp">
       <Filter>Code\UI</Filter>
     </ClCompile>
+    <ClCompile Include="FilePicker.cpp">
+      <Filter>Code\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="FolderPicker.cpp">
+      <Filter>Code\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -134,6 +140,12 @@
     </ClInclude>
     <ClInclude Include="General.h">
       <Filter>Code\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="FilePicker.h">
+      <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="FolderPicker.h">
+      <Filter>Code\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
