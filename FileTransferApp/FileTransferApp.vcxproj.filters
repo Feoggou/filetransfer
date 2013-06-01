@@ -67,6 +67,9 @@
     <ClCompile Include="Tools.cpp">
       <Filter>Code\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Dialog.cpp">
+      <Filter>Code\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -128,6 +131,9 @@
     </ClInclude>
     <ClInclude Include="Tools.h">
       <Filter>Code\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Code\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

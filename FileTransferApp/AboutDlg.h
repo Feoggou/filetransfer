@@ -1,24 +1,20 @@
 #pragma once
 
-#ifndef ABOUTDLG_H
-#define ABOUTDLG_H
-
 #include "General.h"
+#include "Dialog.h"
+#include "resource.h"
 
-class CAboutDlg
+class CAboutDlg: public Dialog
 {
-private:
-	HWND	m_hDlg;
-
 public:
-	CAboutDlg(void) {};
-	~CAboutDlg(void) {};
-
-	void DoModal(HWND hParent);
+	CAboutDlg(HWND hParent): Dialog(hParent, IDD_ABOUTBOX) {}
+	~CAboutDlg() {}
 
 private:
-	static INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void OnInitDialog();
-};
+	CAboutDlg(const CAboutDlg&);
 
-#endif//ABOUTDLG_H
+private:
+	void OnInitDialog() override;
+	void OnCommand(WORD code, WORD id, HWND hControl) override;
+	void OnNotify(NMHDR*) override;
+};

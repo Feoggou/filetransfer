@@ -5,75 +5,6 @@
 
 #include "Application.h"
 
-void CAboutDlg::DoModal(HWND hParent)
-{
-	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(),MAKEINTRESOURCE(IDD_ABOUTBOX), hParent, DlgProc, (LPARAM)this);
-	if (nResult == -1)
-		DisplayError();
-}
-
-INT_PTR CALLBACK CAboutDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	static CAboutDlg* pThis = NULL;
-
-	switch (uMsg)
-	{
-	case WM_INITDIALOG:
-		{
-			//save pThis for further use and save hDlg for use in the class functions
-			pThis = (CAboutDlg*)lParam;
-			pThis->m_hDlg = hDlg;
-			pThis->OnInitDialog();
-		}
-		break;
-
-	case WM_CLOSE:
-		EndDialog(hDlg, IDCANCEL);
-		break;
-
-	case WM_DESTROY:
-		EndDialog(hDlg, IDCANCEL);
-		break;
-
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-			case IDOK:
-				{
-					EndDialog(hDlg, IDCANCEL);
-				}
-				break;
-			}
-		}
-		break;
-
-	case WM_NOTIFY:
-		{
-			NMHDR* pNMHDR = (NMHDR*)lParam;
-			switch (pNMHDR->code)
-			{
-				//when the user has clicked the link
-			case NM_CLICK:
-				{
-					SHELLEXECUTEINFO sei;
-					ZeroMemory(&sei,sizeof(SHELLEXECUTEINFO));
-					sei.cbSize = sizeof(SHELLEXECUTEINFO);
-					sei.lpVerb = TEXT( "open" );
-					sei.lpFile = L"http://compose.mail.yahoo.com/?To=fio_244@yahoo.com";	
-					sei.nShow = SW_SHOWNORMAL;
-
-					ShellExecuteEx(&sei);
-				}
-				break;
-			}
-		}
-		break;
-	}
-
-	return 0;
-}
-
 void CAboutDlg::OnInitDialog()
 {
 	//showing the ip of the user
@@ -100,11 +31,11 @@ void CAboutDlg::OnInitDialog()
 	*(sHostName + 8) = 0;
 	if (0 == StringCompA(sHostName, "192.168."))
 	{
-		SetDlgItemTextA(m_hDlg, IDC_ST_IPDESC, "This is a private internal address provided by your router. Your computer can be used as a server only for the computers connected to the same router.");
+		SetDlgItemTextA(m_hWnd, IDC_ST_IPDESC, "This is a private internal address provided by your router. Your computer can be used as a server only for the computers connected to the same router.");
 	}
 	else
 	{
-		SetDlgItemTextA(m_hDlg, IDC_ST_IPDESC, "This IP Address can be used to create the connection: Your computer can be used as a server to which any other computer can connect.");
+		SetDlgItemTextA(m_hWnd, IDC_ST_IPDESC, "This IP Address can be used to create the connection: Your computer can be used as a server to which any other computer can connect.");
 	}
 	//put back the character that was at this position.
 	*(sHostName + 8) = oldchar;
@@ -116,9 +47,31 @@ void CAboutDlg::OnInitDialog()
 	StringCopyA(sIP + 20, sHostName);
 
 	//show the message with the IP
-	SetDlgItemTextA(m_hDlg, IDC_STATIC_IP, sIP);
+	SetDlgItemTextA(m_hWnd, IDC_STATIC_IP, sIP);
 	delete[] sIP;
 
 	//we no longer need pResults
 	freeaddrinfo(pResults);
+}
+
+void CAboutDlg::OnCommand(WORD /*code*/, WORD id, HWND /*hControl*/)
+{
+	if (id == IDOK) {
+		OnClose();
+	}
+}
+
+void CAboutDlg::OnNotify(NMHDR* pNMHDR)
+{
+	if (pNMHDR->code == NM_CLICK)
+	{
+		SHELLEXECUTEINFO sei;
+		ZeroMemory(&sei,sizeof(SHELLEXECUTEINFO));
+		sei.cbSize = sizeof(SHELLEXECUTEINFO);
+		sei.lpVerb = TEXT( "open" );
+		sei.lpFile = L"http://compose.mail.yahoo.com/?To=fio_244@yahoo.com";	
+		sei.nShow = SW_SHOWNORMAL;
+
+		ShellExecuteEx(&sei);
+	}
 }

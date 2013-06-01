@@ -33,7 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		app.ShowMainDialog();
 
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		//TODO
 	}
 
