@@ -1,108 +1,127 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{2f53a5bf-be35-4391-87ba-6b0cbd9ffa95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\UI">
+      <UniqueIdentifier>{a1a65dc3-53ac-4831-9c39-3406f8a0cc50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\Application">
+      <UniqueIdentifier>{1467c8da-54b8-44d0-8d9f-28354b6b0404}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\Network">
+      <UniqueIdentifier>{52a779a3-2ae6-41e3-ae84-76db8121eaad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\FS">
+      <UniqueIdentifier>{040864ef-93a7-4670-915d-5a5519670f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\Core">
+      <UniqueIdentifier>{40310988-7460-4bd2-a653-fb38382e7678}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CRC.cpp">
+      <Filter>Code</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileTransferDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SamSocket.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code</Filter>
     </ClCompile>
     <ClCompile Include="Recv.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code</Filter>
     </ClCompile>
     <ClCompile Include="Send.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Code\Application</Filter>
     </ClCompile>
     <ClCompile Include="AboutDlg.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code\UI</Filter>
     </ClCompile>
     <ClCompile Include="NickNameDlg.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="SamSocket.cpp">
+      <Filter>Code\Network</Filter>
     </ClCompile>
     <ClCompile Include="SocketServer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code\Network</Filter>
     </ClCompile>
     <ClCompile Include="SocketClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code\Network</Filter>
     </ClCompile>
     <ClCompile Include="DestFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Code\FS</Filter>
     </ClCompile>
-    <ClCompile Include="CRC.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SourceFile.cpp">
+      <Filter>Code\FS</Filter>
+    </ClCompile>
+    <ClCompile Include="MainDlg.cpp">
+      <Filter>Code\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="General.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileTransferDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SamSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DoubleList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Recv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Send.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AboutDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SamFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="String.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NickNameDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DestFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Code</Filter>
     </ClInclude>
     <ClInclude Include="CRC.h">
-      <Filter>Header Files</Filter>
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="General.h">
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="Recv.h">
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="Send.h">
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="String.h">
+      <Filter>Code</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Code\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="NickNameDlg.h">
+      <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="SamSocket.h">
+      <Filter>Code\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketServer.h">
+      <Filter>Code\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketClient.h">
+      <Filter>Code\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DestFile.h">
+      <Filter>Code\FS</Filter>
+    </ClInclude>
+    <ClInclude Include="SamFile.h">
+      <Filter>Code\FS</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceFile.h">
+      <Filter>Code\FS</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog.h">
+      <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Code\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="MainDlg.h">
+      <Filter>Code\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

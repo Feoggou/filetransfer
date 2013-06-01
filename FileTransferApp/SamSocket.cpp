@@ -2,7 +2,6 @@
 #include "SamSocket.h"
 
 extern BOOL bOrderEnd;
-extern HWND hMainWnd;
 extern HWND hDlgStatus;
 
 CSamSocket::CSamSocket(void)

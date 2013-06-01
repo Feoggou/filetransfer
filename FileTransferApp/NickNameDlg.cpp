@@ -1,7 +1,7 @@
 #include "NickNameDlg.h"
 #include "resource.h"
 
-extern HINSTANCE hAppInstance;
+#include "Application.h"
 
 
 CNickNameDlg::CNickNameDlg(void)
@@ -21,7 +21,7 @@ CNickNameDlg::~CNickNameDlg(void)
 
 INT_PTR CNickNameDlg::DoModal(HWND hParent)
 {
-	INT_PTR nResult = DialogBoxParamW(hAppInstance, MAKEINTRESOURCE(IDD_NICKNAME), hParent, DlgProc, (LPARAM)this);
+	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(), MAKEINTRESOURCE(IDD_NICKNAME), hParent, DlgProc, (LPARAM)this);
 	if (nResult == -1)
 		DisplayError();
 

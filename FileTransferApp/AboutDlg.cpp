@@ -3,11 +3,11 @@
 #include "SamSocket.h"
 #include <Ws2tcpip.h>
 
-extern HINSTANCE hAppInstance;
+#include "Application.h"
 
 void CAboutDlg::DoModal(HWND hParent)
 {
-	INT_PTR nResult = DialogBoxParamW(hAppInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), hParent, DlgProc, (LPARAM)this);
+	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(),MAKEINTRESOURCE(IDD_ABOUTBOX), hParent, DlgProc, (LPARAM)this);
 	if (nResult == -1)
 		DisplayError();
 }

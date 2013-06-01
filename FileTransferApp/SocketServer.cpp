@@ -1,8 +1,8 @@
 #include "SocketServer.h"
 #include "General.h"
-#include "FileTransferDlg.h"
+#include "MainDlg.h"
 
-extern HWND hMainWnd;
+#include "Application.h"
 
 CSocketServer::CSocketServer(void):CSamSocket()
 {
@@ -265,9 +265,9 @@ BOOL CSocketServer::Reconnect()
 	CSocketServer* pRecvServer = (CSocketServer*)Recv::pSocket;
 	CSocketServer* pSendServer = (CSocketServer*)Send::pSocket;
 
-	PostMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hButtonBrowse, 0);
-	PostMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hButtonSend, 0);
-	SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been lost. Trying to reconnect.");
+	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
+	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
+	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been lost. Trying to reconnect.");
 
 	int nError = pSendServer->Close();
 	if (nError)
@@ -365,9 +365,9 @@ BOOL CSocketServer::Reconnect()
 	Connected = Conn::ConnAsServer;
 
 	//after the connection is successful:
-	SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
-	PostMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hButtonBrowse, 1);
-	PostMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hButtonSend, 1);
+	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
+	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
+	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 1);
 	
 	return true;
 }

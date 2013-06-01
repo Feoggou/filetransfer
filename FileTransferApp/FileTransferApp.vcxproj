@@ -83,9 +83,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="DestFile.cpp" />
-    <ClCompile Include="FileTransferDlg.cpp" />
+    <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NickNameDlg.cpp" />
     <ClCompile Include="Recv.cpp" />
@@ -99,10 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="Application.h" />
     <ClInclude Include="CRC.h" />
     <ClInclude Include="DestFile.h" />
-    <ClInclude Include="DoubleList.h" />
-    <ClInclude Include="FileTransferDlg.h" />
+    <ClInclude Include="Dialog.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="MainDlg.h" />
     <ClInclude Include="General.h" />
     <ClInclude Include="NickNameDlg.h" />
     <ClInclude Include="Recv.h" />

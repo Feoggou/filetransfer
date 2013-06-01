@@ -1,17 +1,15 @@
 #include <math.h>
+#include <exception>
 
 #include "General.h"
-#include "FileTransferDlg.h"
+#include "Application.h"
+
+#include "MainDlg.h"
 #include "resource.h"
 #include "Recv.h"
 #include "Send.h"
 
 #include "String.h"
-#include "CRC.h"
-
-//the main dialog object
-CFileTransferDlg mainDlg;
-extern HWND hMainWnd;
 
 //the variable that specifies if the connection and all that goes with it should end or not
 BOOL bOrderEnd = false;
@@ -20,51 +18,25 @@ Conn Connected = Conn::NotConnected;
 //this specifies the status of the transfer: if file(s) are being sent, are being retrieved or both
 DWORD dwDataTransfer = 0;
 
-//the instance of the program
-HINSTANCE hAppInstance;
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	//initialize COM
-	CoInitialize(0);
-
-	hAppInstance = hInstance;
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	UNREFERENCED_PARAMETER(nCmdShow);
 
-	//initialize the common controls
-	INITCOMMONCONTROLSEX InitCtrls;
-	InitCtrls.dwSize = sizeof(InitCtrls);
-	InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	InitCommonControlsEx(&InitCtrls);
+	try {
+		Application app(hInstance);
 
-	//initialize the sockets
-	int nError = CSamSocket::InitSockets();
-	if (nError)
-	{
-		DisplayError(nError);
-		return -1;
+		app.ShowMainDialog();
+
+	} catch (std::exception& e) {
+		//TODO
 	}
 
-	crcInit();
-
-	//create the main dialogbox
-	mainDlg.DoModal();
-
-	//uninitialize the sockets
-	nError = CSamSocket::UninitSockets();
-	if (nError)
-	{
-		DisplayError(nError);
-	}
-
-	//uninitialize COM
-	CoUninitialize();
 	return 0;
 }
 

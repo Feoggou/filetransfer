@@ -1,8 +1,10 @@
 #include "Recv.h"
-#include "FileTransferDlg.h"
+#include "MainDlg.h"
 #include "SocketClient.h"
 #include "CRC.h"
 #include "General.h"
+
+#include "Application.h"
 
 #include <math.h>
 
@@ -21,9 +23,6 @@ the folder you have on your disk. Do you want to receive it? If yes, you will re
 
 #define IDS_FOLDER_COULD_NOT_BE_CREATED L"Folder \"%s\" could not be created."
 #define IDS_FINISHED_TRANSFERRING L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!"
-
-extern HWND hMainWnd;
-extern HINSTANCE hAppInstance;
 
 HANDLE Recv::hThread = INVALID_HANDLE_VALUE;
 HANDLE Recv::hConnThread = INVALID_HANDLE_VALUE;
@@ -76,8 +75,8 @@ inline BOOL Recv::SendData(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -109,8 +108,8 @@ inline BOOL Recv::ReceiveData(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -127,8 +126,8 @@ inline BOOL Recv::ReceiveData(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -194,8 +193,8 @@ try_again:
 		if (bOrderEnd) return false;
 		if (0 == dSentRec)
 		{
-			SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-			PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+			PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 			return false;
 		}
 
@@ -233,8 +232,8 @@ inline BOOL Recv::SendDataShort(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -282,8 +281,8 @@ inline BOOL Recv::ReceiveDataShort(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -308,8 +307,8 @@ inline BOOL Recv::ReceiveDataShort(void* Buffer, int dSize)
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -342,8 +341,8 @@ inline BOOL Recv::WaitForDataReceive()
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -394,8 +393,8 @@ inline BOOL Recv::HandShake()
 			if (bOrderEnd) return false;
 			if (0 == dSentRec)
 			{
-				SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(hMainWnd, WM_CLOSECONNECTION, 0, 0);
+				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
+				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
 				return false;
 			}
 
@@ -427,7 +426,7 @@ DWORD Recv::ThreadProc(void)
 		//here we wait until a file will be transferred!
 		if (false == WaitForDataReceive()) return 0;
 
-		PostMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
+		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
 
 		//RETRIEVING THE ITEM TYPE
 		if (false == ReceiveDataSimple(&Recv::itemType, sizeof(Recv::itemType))) return false;
@@ -519,7 +518,7 @@ DWORD Recv::ThreadProc(void)
 
 		//asking the user if he wants to receive the file/folder
 		bool bConfirmed = true;
-		if (MessageBox(hMainWnd, wsMessage, wsTitle, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+		if (MessageBox(theApp->GetMainWindow(), wsMessage, wsTitle, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
 		{
 			delete[] wsMessage;
 
@@ -575,7 +574,7 @@ DWORD Recv::ThreadProc(void)
 		//ok, we have the required size. now, we save the file/folder!
 		if (Recv::itemType == ItemType::File)
 		{
-			SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Preparing to receive the file...", 2);
+			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Preparing to receive the file...", 2);
 
 			int lenChild = StringLen(wsSavePath.s) + 1;
 			Recv::wsChildFileName = new WCHAR[lenChild];
@@ -589,7 +588,7 @@ DWORD Recv::ThreadProc(void)
 		}
 		else
 		{
-			PostMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Preparing to receive the folder...", 2);
+			PostMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Preparing to receive the folder...", 2);
 			int nSaveLen = StringLen(wsSavePath.s);
 
 			//ok, the file path will be relative to the wsSavePath folder
@@ -686,10 +685,10 @@ DWORD Recv::ThreadProc(void)
 
 		wsMessage = new WCHAR[szlen];
 		StringFormat(wsMessage, L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!", wsTotalSize);
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
 		delete[] wsMessage;
 		
-		SendMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, 100, 0);
+		SendMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 100, 0);
 
 		wsMessage = new WCHAR[300];
 
@@ -713,7 +712,7 @@ DWORD Recv::ThreadProc(void)
 		StringCopy(wsPath, wsSavePath.s);
 		//we post this message, because the UI thread must perform it and this thread must continue
 		//sending keep-alive messages
-		PostMessage(hMainWnd, WM_SHOWMESSAGEBOX, (WPARAM)wsPath, (LPARAM)wsMessage);
+		PostMessage(theApp->GetMainWindow(), WM_SHOWMESSAGEBOX, (WPARAM)wsPath, (LPARAM)wsMessage);
 
 		//wsMessage is deleted by the UI thread
 		//the UI thread will also update the UI.
@@ -749,7 +748,7 @@ DWORD Recv::ConnThreadProc()
 		goto final;
 	}
 
-	SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connecting to the server...");
+	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connecting to the server...");
 
 	//Connect
 try_again:
@@ -765,7 +764,7 @@ try_again:
 		}
 		else
 		{
-			SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
+			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
 				goto try_again;
 		}
 	}; 
@@ -783,7 +782,7 @@ try_again2:
 		}
 		else
 		{
-			SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
+			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
 				goto try_again2;
 		}
 
@@ -800,10 +799,10 @@ final:
 		Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, 0, 0, 0);
 
 		//after the connection is succesful:
-		SendMessage(CFileTransferDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
-		PostMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hButtonBrowse, 1);
+		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
+		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
 	}
-	else PostMessage(hMainWnd, WM_CLOSE, 0, 0);
+	else PostMessage(theApp->GetMainWindow(), WM_CLOSE, 0, 0);
 
 	return 0;
 }
@@ -855,7 +854,7 @@ bool Recv::GetConfirmedVista(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 	do
 	{
 		//show the dialogbox
-		hr = pDlg->Show(hMainWnd);
+		hr = pDlg->Show(theApp->GetMainWindow());
 		if (FAILED(hr))
 		{
 			//either canceled or error
@@ -980,7 +979,7 @@ bool Recv::GetConfirmedRepairVista(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 	do
 	{
 		//we display the dialogbox
-		hr = pDlg->Show(hMainWnd);
+		hr = pDlg->Show(theApp->GetMainWindow());
 		if (FAILED(hr))
 		{
 			//canceled or error
@@ -1095,8 +1094,8 @@ bool Recv::GetConfirmedXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 
 	OPENFILENAMEW ofn = {0};
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hMainWnd;
-	ofn.hInstance = hAppInstance;
+	ofn.hwndOwner = theApp->GetMainWindow();
+	ofn.hInstance = Application::GetHInstance();
 	ofn.lpstrFile = new WCHAR[2000];
 	ofn.nMaxFile = 2000;
 	StringCopy(ofn.lpstrFile, Recv::wsParentDisplayName);
@@ -1116,8 +1115,8 @@ bool Recv::GetConfirmedXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 			if (dwError)
 			{
 				WCHAR wsError[500];
-				LoadStringW(hAppInstance, dwError, wsError, 500);
-				MessageBox(hMainWnd, wsError, 0, MB_ICONERROR);
+				LoadStringW(Application::GetHInstance(), dwError, wsError, 500);
+				MessageBox(theApp->GetMainWindow(), wsError, 0, MB_ICONERROR);
 			}
 						
 			delete[] ofn.lpstrFile;
@@ -1168,7 +1167,7 @@ bool Recv::GetConfirmedRepairXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 	bool bRetValue = true;
 
 	BROWSEINFOW bi = {0};
-	bi.hwndOwner = hMainWnd;
+	bi.hwndOwner = theApp->GetMainWindow();
 	bi.lpszTitle = L"Chose the folder you wish to repair:";
 	bi.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS | BIF_NONEWFOLDERBUTTON;
 	bi.pszDisplayName = new WCHAR[MAX_PATH];
@@ -1199,7 +1198,7 @@ bool Recv::GetConfirmedRepairXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 				CoTaskMemFree(pidlResult);
 				pShellItem->Release();
 
-				MessageBox(hMainWnd, L"Invalid selection. Chose a directory or a drive!", L"Invalid selection!", MB_ICONWARNING);
+				MessageBox(theApp->GetMainWindow(), L"Invalid selection. Chose a directory or a drive!", L"Invalid selection!", MB_ICONWARNING);
 				continue;
 			}
 
@@ -1235,7 +1234,7 @@ bool Recv::GetConfirmedRepairXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize)
 			}
 
 			ITEMIDLIST* pidlFolder;
-			hr = pDesktop->ParseDisplayName(hMainWnd, NULL, *wsSavePath, NULL, &pidlFolder, NULL);
+			hr = pDesktop->ParseDisplayName(theApp->GetMainWindow(), NULL, *wsSavePath, NULL, &pidlFolder, NULL);
 			if (FAILED(hr))
 			{
 				pDesktop->Release();
@@ -1330,11 +1329,11 @@ BOOL Recv::ReceiveOneFile()
 		if (true == bExists) 
 		{
 			Recv::dwCurrentPartGlobal += nrParts;
-			if (!CFileTransferDlg::m_bIsMinimized)
+			if (!MainDlg::m_bIsMinimized)
 			{
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
+				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
 				int oldpos = Recv::dwCurrentPartGlobal * 100 / Recv::dwNrGreatParts;
-				PostMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
+				PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
 			}
 			return true;
 		}
@@ -1383,7 +1382,7 @@ BOOL Recv::ReceiveOneFile()
 		//we must update the UI
 		QueryPerformanceCounter(&curr_count);
 
-		if (!CFileTransferDlg::m_bIsMinimized)
+		if (!MainDlg::m_bIsMinimized)
 		{
 			//timpul in secude (float) in care s-au transferat BLOCKSIZE bytes.
 			delta = ((curr_count.QuadPart - last_count.QuadPart)/(float)freq.QuadPart);
@@ -1403,16 +1402,16 @@ BOOL Recv::ReceiveOneFile()
 				//oldpos = pozitia in bara de progress, se actualizeaza aprox. o data pe secunda.
 				//oldpos = x, din x% (x = 1->100) finished all.
 				oldpos = Recv::dwCurrentPartGlobal * 100 / Recv::dwNrGreatParts;
-				PostMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
+				PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
 				//viteza = nr de partzi care s-au transferat in timpul deltax * catzi bytes are fiecare parte / deltax
 				if (deltai) speed = deltai * BLOCKSIZE / deltax;
 				else {speed = 0;}
 
 				SpeedFtoString(speed, wsSpeed);
 				StringFormat(wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", oldpos, Recv::wsTotalSize, wsSpeed, wsTimeLeft);
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
+				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
 				StringFormat(wsMessage, L"%s", Recv::wsChildFileName);
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
+				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
 
 				deltax = 0;
 			}
@@ -1428,7 +1427,7 @@ BOOL Recv::ReceiveOneFile()
 
 	if (len > BLOCKSIZE)
 	{
-		MessageBox(hMainWnd, L"len > 10240!", L"EROARE!", 0);
+		MessageBox(theApp->GetMainWindow(), L"len > 10240!", L"EROARE!", 0);
 #ifdef _DEBUG
 		DebugBreak();
 #endif
@@ -1445,7 +1444,7 @@ BOOL Recv::ReceiveOneFile()
 
 	dwCurrentPartGlobal++;
 
-	if (!CFileTransferDlg::m_bIsMinimized)
+	if (!MainDlg::m_bIsMinimized)
 	{
 		//we update the user interface
 		oldpos = Recv::dwCurrentPartGlobal * 100 / Recv::dwNrGreatParts;
@@ -1457,10 +1456,10 @@ BOOL Recv::ReceiveOneFile()
 		}
 
 		StringFormat(wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", oldpos, Recv::wsTotalSize, wsSpeed , wsTimeLeft, Recv::wsChildFileName);
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
 		StringFormat(wsMessage, L"%s", wsChildFileName);
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
-		PostMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)Recv::wsChildFileName, 3);
+		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
 	}
 	return true;
 }
