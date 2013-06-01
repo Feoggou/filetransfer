@@ -97,6 +97,7 @@
     <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="SocketServer.cpp" />
     <ClCompile Include="SourceFile.cpp" />
+    <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
@@ -105,6 +106,7 @@
     <ClInclude Include="DestFile.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="Tools.h" />
     <ClInclude Include="MainDlg.h" />
     <ClInclude Include="General.h" />
     <ClInclude Include="NickNameDlg.h" />

@@ -43,6 +43,3 @@
 #define StringLower wsclwr
 #define StringLowerW wsclwr
 #define StringLowerA strlwr
-
-//converts a wide string into an ansi string
-extern inline char* StringWtoA(WCHAR* wstr);

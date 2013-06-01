@@ -2,6 +2,7 @@
 #include "MainDlg.h"
 #include "SocketServer.h"
 #include "CRC.h"
+#include "Tools.h"
 
 #include "Application.h"
 

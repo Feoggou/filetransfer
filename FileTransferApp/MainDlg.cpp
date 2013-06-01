@@ -3,6 +3,7 @@
 #include "AboutDlg.h"
 
 #include "Application.h"
+#include "Tools.h"
 
 #include "Recv.h"
 #include "Send.h"

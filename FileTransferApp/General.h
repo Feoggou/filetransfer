@@ -131,26 +131,6 @@ extern Conn Connected;
 //specifies if the application is sending data, receiving data, both or none.
 extern DWORD dwDataTransfer;
 
-//FUNCTIONS
-//converts a size from LARGE_INTEGER to a user-friendly string.
-extern inline void SizeLItoString(LARGE_INTEGER&liSize, WCHAR* wsSize);
-//counts the digits of the specified integer number
-extern inline int CountDigits(int nInteger);
-//searches within the folder: all file information is stored in Items; total size is stored in liSize.
-void SearchFolder(IShellFolder* pSearchFolder, CDoubleList<FILE_ITEM> &Items, LARGE_INTEGER& liSize);
-//calculates the size of the specified file
-inline BOOL CalcFileSize(const WCHAR* wsPath, LARGE_INTEGER& liSize);
-//checks to see if the specified file/folder exists or not.
-extern inline BOOL PathFileExistsEx(const WCHAR* wsPath);
-
-//formats the time in hh:mm:ss format
-extern inline void FormatTime(WCHAR wsTime[20], DWORD dTime);
-//converts a double that represents the transfer speed into a user-friendly transfer speed.
-extern inline void SpeedFtoString(float fSpeed, WCHAR* wsSpeed);
-
-//called by the doublelist when an item must be removed
-extern void __stdcall OnDestroyFileItemCoTask(FILE_ITEM& fitem);
-
 #ifdef _UNICODE
 #if defined _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
