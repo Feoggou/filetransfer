@@ -54,7 +54,7 @@ void Application::ShowMainDialog()
 	_ASSERT(!m_pMainDlg.get());
 
 	m_pMainDlg.reset(new MainDlg);
-	m_pMainDlg->DoModal();
+	m_pMainDlg->CreateModal();
 }
 
 HWND Application::GetMainWindow()

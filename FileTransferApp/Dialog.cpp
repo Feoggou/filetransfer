@@ -39,9 +39,10 @@ INT_PTR CALLBACK Dialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_DESTROY: pThis->OnDestroy(); break;
 	case WM_COMMAND: pThis->OnCommand(HIWORD(wParam), LOWORD(wParam), (HWND)lParam); break;
 	case WM_NOTIFY:	{ NMHDR* pNMHDR = (NMHDR*)lParam; pThis->OnNotify(pNMHDR);}	break;
+	case WM_SYSCOMMAND: pThis->OnSysCommand(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)); break;
 	}
 
-	return 0;
+	return pThis->OnDialogProcedure(uMsg, wParam, lParam);
 }
 
 void Dialog::OnClose()

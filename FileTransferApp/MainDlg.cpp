@@ -10,6 +10,8 @@
 
 #include "NickNameDlg.h"
 
+//#include <cmath>
+
 #include "SocketClient.h"
 
 #define IDMI_ABOUT			0x0010
@@ -40,251 +42,197 @@ HWND MainDlg::m_hBarRecv = NULL;
 
 BOOL MainDlg::m_bIsMinimized = NULL;
 
-void MainDlg::DoModal()
+void MainDlg::OnClose()
 {
-	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(), MAKEINTRESOURCE(IDD_FILETRANSFERAPP_DIALOG), NULL, DlgProc, (LPARAM)this);
-	if (nResult == -1)
-		DisplayError();
+	if (dwDataTransfer)
+	{
+		if (MessageBox(m_hWnd, L"File transfer is not finished. Are you sure you want to cancel the transfer?",
+			L"File Transfer cancelling", MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+			return;
+	}
+
+	DestroyTrayIcon();
+	CloseAll();
+
+	Dialog::OnClose();
 }
 
-INT_PTR CALLBACK MainDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void MainDlg::OnSysCommand(WPARAM cmd, int x, int y) 
 {
-	static MainDlg* pThis = NULL;
+	if ((cmd & 0xFFF0) == IDMI_ABOUT) {
+		AboutDlg dlgAbout(m_hWnd);
+		dlgAbout.CreateModal();
+	}
+}
 
-	switch (uMsg)
+void MainDlg::OnAbout()
+{
+	AboutDlg dlgAbout(m_hWnd);
+	dlgAbout.CreateModal();
+}
+
+void MainDlg::OnButtonSend()
+{
+	//get ready the filename
+	SetDlgItemTextW(m_hWnd, IDC_ST_SEND, L"Not Sending");
+
+	//use the thread for sending the data
+	dwDataTransfer |= DATATRANSF_SEND;
+
+	//while sending, we disable the "Send" and the "Browse" buttons
+	EnableWindow(m_hButtonSend, false);
+	EnableWindow(m_hButtonBrowse, false);
+}
+
+void MainDlg::RestoreFromTray()
+{
+	DestroyTrayIcon();
+	ShowWindow(m_hWnd, 1);
+	m_bIsMinimized = FALSE;
+}
+
+void MainDlg::OnCommand(WORD source, WORD id, HWND /*hControl*/) 
+{
+	switch (id)
 	{
-	case WM_INITDIALOG:
+	case IDC_ABOUT: OnAbout(); break;
+	case IDC_BUTTON_SEND: OnButtonSend(); break;
+	case IDC_BUTTON_CONNECT: OnButtonConnect(); break;
+	case IDC_BUTTON_CREATE_CONNECTION: CreateConnection(); break;
+	case IDC_BUTTON_BROWSE:	OnBrowse(); break;
+	case IDC_EXIT: OnClose(); break;
+		//the user has chosen the "Exit" item from the system tray menu.
+		//we execute the same "Close" command
+	case ID_EXITPROG: OnClose(); break;
+
+		//restore the program from "minimized to tray" state.
+		//the item menu is "Show"
+	case ID_RESTOREPROG: if (source == MessageSource_Menu) RestoreFromTray(); break;
+	}
+}
+
+void MainDlg::OnEnableChild(HWND hChild, bool enable)
+{
+	EnableWindow(hChild, enable);
+}
+
+void MainDlg::OnSetItemText(LPARAM lParam, LPCWSTR text)
+{
+	switch (lParam)
+	{
+	case 0: SetWindowText(m_hStatusSend, text); break;
+	case 1: SetWindowText(m_hStatusCurrFileSend, text); break;
+	case 2: SetWindowText(m_hStatusRecv, text); break;
+	case 3: SetWindowText(m_hStatusCurrFileRecv, text); break;
+	}
+}
+
+void MainDlg::OnTrayMessage(LPARAM lParam)
+{
+	if (lParam == WM_RBUTTONUP)
+	{	
+		HMENU hMenu = CreatePopupMenu();
+		AppendMenuW(hMenu, MF_STRING, ID_RESTOREPROG, L"&Show");
+		AppendMenuW(hMenu, MF_SEPARATOR, 0, 0);
+		AppendMenuW(hMenu, MF_STRING, ID_EXITPROG, L"E&xit");
+
+		POINT point;
+		GetCursorPos(&point);
+		TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, 0);
+	}
+}
+
+void MainDlg::OnMinimized()
+{
+	_ASSERT(!m_bIsMinimized);
+	m_bIsMinimized = TRUE;
+
+	NOTIFYICONDATA nid;
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.hWnd = m_hWnd;
+	nid.uID = SYSTRAY_ICON;
+	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	nid.uCallbackMessage = WM_TRAYMSG;
+	nid.hIcon = m_hIcon;
+	StringCopyW(nid.szTip, L"File Transfer Application");
+
+	Shell_NotifyIcon(NIM_ADD, &nid);
+	ShowWindow(m_hWnd, 0);
+}
+
+void MainDlg::OnSize(WPARAM type, int new_width, int new_height)
+{
+	//when the user has chosen to minimize the dialogbox, we actually hide it
+	//and display an icon in the system tray.
+	if (type == SIZE_MINIMIZED)
+	{
+		OnMinimized();
+	}
+}
+
+void MainDlg::OnShowMessageBox(LPCWSTR message, LPCWSTR path)
+{
+	//if it is the receiver:
+	if (path)
+	{
+		if (MessageBoxW(hMainWnd, message, L"Transfer finished", MB_YESNO) == IDYES)
 		{
-			//save pThis and the HWND
-			pThis = (MainDlg*)lParam;
-			pThis->m_hDlg = hDlg;
-			hMainWnd = hDlg;
-			pThis->OnInitDialog();
+			ShellExecute(0, L"explore", path, NULL, NULL, SW_SHOWNORMAL);
 		}
-		break;
 
-	case WM_CLOSE:
-		{
-			if (dwDataTransfer)
-			{
-				if (MessageBox(hDlg, L"File transfer is not finished. Are you sure you want to cancel the transfer?",
-			L"File Transfer cancelling", MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
-					return 0;
-			}
+		delete[] message;
+		delete[] path;
 
-			pThis->DestroyTrayIcon();
-			pThis->CloseAll();
+		//we finally reset the status text and progressbar.
+		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Receiving", 2);
+		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 3);
+		SendMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
+	}
 
-			EndDialog(hDlg, IDCANCEL);
-		}
-		break;
+	//if it is the sender:
+	else
+	{
+		MessageBoxW(hMainWnd, message, L"Transfer finished!", MB_ICONINFORMATION);
 
-	case WM_SYSCOMMAND:
-		{
-			if ((wParam & 0xFFF0) == IDMI_ABOUT)
-			{
-				AboutDlg dlgAbout(hDlg);
-				dlgAbout.CreateModal();
-			}
-		}
-		break;
+		//we reset the progressbar only after
+		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Sending", 0);
+		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 1);
+		SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 0, 0);
+		SendMessage(MainDlg::m_hCheckRepairMode, BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 1);
+	}
+}
 
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-			case IDC_ABOUT:
-				{
-					AboutDlg dlgAbout(hDlg);
-					dlgAbout.CreateModal();
-				}
-				break;
-
-			case IDC_BUTTON_SEND:
-				{
-					//get ready the filename
-					SetDlgItemTextW(hDlg, IDC_ST_SEND, L"Not Sending");
-
-					//use the thread for sending the data
-					dwDataTransfer |= DATATRANSF_SEND;
-	
-					//while sending, we disable the "Send" and the "Browse" buttons
-					EnableWindow(m_hButtonSend, false);
-					EnableWindow(m_hButtonBrowse, false);
-				}
-				break;
-
-			case IDC_BUTTON_CONNECT:
-				{
-					pThis->OnButtonConnect();
-				}
-				break;
-
-			case IDC_BUTTON_CREATE_CONNECTION:
-				{
-					pThis->CreateConnection();
-				}
-				break;
-
-			case IDC_BUTTON_BROWSE:
-				{
-					pThis->OnBrowse();
-				}
-				break;
-
-			case IDC_EXIT:
-				{
-					//when we press the "Exit" button, we close the dialog as we do if
-					//the user pressed the X button of the dialogbox.
-					SendMessage(hDlg, WM_CLOSE, 0, 0);
-				}
-				break;
-
-				//restore the program from "minimized to tray" state.
-				//the item menu is "Show"
-			case ID_RESTOREPROG:
-				{
-					if (HIWORD(wParam) == 0)
-					{
-						pThis->DestroyTrayIcon();
-						ShowWindow(hDlg, 1);
-						pThis->m_bIsMinimized = FALSE;
-					}
-				}
-				break;
-
-				//the user has chosen the "Exit" item from the system tray menu.
-				//we execute the same "Close" command
-			case ID_EXITPROG:
-				{
-					if (HIWORD(wParam) == 0)
-					{
-						SendMessage(hDlg, WM_CLOSE, 0, 0);
-					}
-				}
-				break;
-			}
-		}
-		break;
-
+INT_PTR MainDlg::OnDialogProcedure(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
 		//WPARAM - HWND of the child
 		//LPARAM - 1: enable; 0: disable
-	case WM_ENABLECHILD:
-		{
-			EnableWindow((HWND)wParam, (BOOL)lParam);
-		}
-		break;
-
+	case WM_ENABLECHILD: OnEnableChild((HWND)wParam, (BOOL)lParam); break;
 		//LPARAM: 0 - for send info; 1 - for send curfile; 
 		//        2 - for recv info; 3 - for recv curfile;
 		//WPARAM: text
-	case WM_SETITEMTEXT:
-		{
-			switch (lParam)
-			{
-			case 0: SetWindowText(m_hStatusSend, (LPCWSTR)wParam); break;
-			case 1: SetWindowText(m_hStatusCurrFileSend, (LPCWSTR)wParam); break;
-			case 2: SetWindowText(m_hStatusRecv, (LPCWSTR)wParam); break;
-			case 3: SetWindowText(m_hStatusCurrFileRecv, (LPCWSTR)wParam); break;
-			}
-		}
-		break;
-
+	case WM_SETITEMTEXT: OnSetItemText(lParam, LPCWSTR(wParam)); break;
 		//closes the sockets, the threads, updates the UI after disconnection, deletes buffers
 		//resets variables
-	case WM_CLOSECONNECTION:
-		{
-			pThis->CloseAll();
-		}
-		break;
-
+	case WM_CLOSECONNECTION: CloseAll(); break;
 		//when the user has right-clicked on the system tray icon of the program
 		//create and display the menu
-	case WM_TRAYMSG:
-		if (lParam == WM_RBUTTONUP)
-		{	
-			HMENU hMenu = CreatePopupMenu();
-			AppendMenuW(hMenu, MF_STRING, ID_RESTOREPROG, L"&Show");
-			AppendMenuW(hMenu, MF_SEPARATOR, 0, 0);
-			AppendMenuW(hMenu, MF_STRING, ID_EXITPROG, L"E&xit");
-			
-			POINT point;
-			GetCursorPos(&point);
-			TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, hDlg, 0);
-		}
-		break;
-
-		//when the user has chosen to minimize the dialogbox, we actually hide it
-		//and display an icon in the system tray.
-	case WM_SIZE:
-		{
-			if (wParam == SIZE_MINIMIZED)
-			{
-				_ASSERT(!pThis->m_bIsMinimized);
-				pThis->m_bIsMinimized = TRUE;
-
-				NOTIFYICONDATA nid;
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = hDlg;
-				nid.uID = SYSTRAY_ICON;
-				nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-				nid.uCallbackMessage = WM_TRAYMSG;
-				nid.hIcon = pThis->m_hIcon;
-				StringCopyW(nid.szTip, L"File Transfer Application");
-
-				Shell_NotifyIcon(NIM_ADD, &nid);
-				ShowWindow(hDlg, 0);
-			}
-		}
-		break;
-
-	case WM_SHOWMESSAGEBOX:
-		{
-			//if it is the receiver:
-			if (wParam != 0)
-			{
-				WCHAR* wsMessage = (WCHAR*)lParam;
-				WCHAR* wsPath = (WCHAR*)wParam;
-				if (MessageBoxW(hMainWnd, wsMessage, L"Transfer finished", MB_YESNO) == IDYES)
-				{
-					ShellExecute(0, L"explore", wsPath, NULL, NULL, SW_SHOWNORMAL);
-				}
-
-				delete[] wsMessage;
-				delete[] wsPath;
-
-				//we finally reset the status text and progressbar.
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Receiving", 2);
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 3);
-				SendMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
-			}
-
-			//if it is the sender:
-			else
-			{
-				MessageBoxW(hMainWnd, (WCHAR*)lParam, L"Transfer finished!", MB_ICONINFORMATION);
-
-				//we reset the progressbar only after
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Sending", 0);
-				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 1);
-				SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 0, 0);
-				SendMessage(MainDlg::m_hCheckRepairMode, BM_SETCHECK, BST_UNCHECKED, 0);
-				SendMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 1);
-			}
-		}
-		break;
+	case WM_TRAYMSG: OnTrayMessage(lParam); break;
+	case WM_SIZE: OnSize(wParam, LOWORD(lParam), HIWORD(lParam)); break;
+		//shows a messagebox (so that it is called by the UI thread)
+		//lParam = the text; wParam = the style.
+	case WM_SHOWMESSAGEBOX: OnShowMessageBox((LPCWSTR)lParam, (LPCWSTR)wParam); break;
 	}
 
 	return 0;
 }
 
-#include <math.h>
-
 void MainDlg::OnInitDialog()
 {
 	//appending the "About" item in the system menu
 	{
-		HMENU hMenu = GetSystemMenu(m_hDlg, FALSE);
+		HMENU hMenu = GetSystemMenu(m_hWnd, FALSE);
 		int nID = GetMenuItemCount(hMenu);
 		MENUITEMINFO mii = {0};
 		mii.cbSize = sizeof(mii);
@@ -298,31 +246,31 @@ void MainDlg::OnInitDialog()
 
 	//setting the icon
 	m_hIcon = LoadIcon(Application::GetHInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
-	SendMessage(m_hDlg, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
-	SendMessage(m_hDlg, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
+	SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
+	SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
 
 	//initializing handles and controls: here the progress bars
-	m_hBarRecv = GetDlgItem(m_hDlg, IDC_PROG_RECV);
-	m_hBarSend = GetDlgItem(m_hDlg, IDC_PROG_SEND);
+	m_hBarRecv = GetDlgItem(m_hWnd, IDC_PROG_RECV);
+	m_hBarSend = GetDlgItem(m_hWnd, IDC_PROG_SEND);
 
 	//set the range of the progress bars
 	SendMessageW(m_hBarRecv, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 	SendMessageW(m_hBarSend, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 
 	//initializing handles and controls
-	m_hCheckRepairMode = GetDlgItem(m_hDlg, IDC_CHK_REPAIRMODE);
-	m_hStatusText = GetDlgItem(m_hDlg, IDC_STATUS);
-	m_hButtonConnect = GetDlgItem(m_hDlg, IDC_BUTTON_CONNECT);
-	m_hButtonCreateConn = GetDlgItem(m_hDlg, IDC_BUTTON_CREATE_CONNECTION);
-	m_hComboNickIP = GetDlgItem(m_hDlg, IDC_COMBO_IP);
-	m_hButtonSend = GetDlgItem(m_hDlg, IDC_BUTTON_SEND);
-	m_hButtonBrowse = GetDlgItem(m_hDlg, IDC_BUTTON_BROWSE);
-	m_hEditItemPath = GetDlgItem(m_hDlg, IDC_EDIT_BROWSE);
+	m_hCheckRepairMode = GetDlgItem(m_hWnd, IDC_CHK_REPAIRMODE);
+	m_hStatusText = GetDlgItem(m_hWnd, IDC_STATUS);
+	m_hButtonConnect = GetDlgItem(m_hWnd, IDC_BUTTON_CONNECT);
+	m_hButtonCreateConn = GetDlgItem(m_hWnd, IDC_BUTTON_CREATE_CONNECTION);
+	m_hComboNickIP = GetDlgItem(m_hWnd, IDC_COMBO_IP);
+	m_hButtonSend = GetDlgItem(m_hWnd, IDC_BUTTON_SEND);
+	m_hButtonBrowse = GetDlgItem(m_hWnd, IDC_BUTTON_BROWSE);
+	m_hEditItemPath = GetDlgItem(m_hWnd, IDC_EDIT_BROWSE);
 
-	m_hStatusSend = GetDlgItem(m_hDlg, IDC_ST_SEND);
-	m_hStatusRecv = GetDlgItem(m_hDlg, IDC_ST_RECV);
-	m_hStatusCurrFileSend = GetDlgItem(m_hDlg, IDC_ST_CURFILE_S);
-	m_hStatusCurrFileRecv = GetDlgItem(m_hDlg, IDC_ST_CURFILE_R);
+	m_hStatusSend = GetDlgItem(m_hWnd, IDC_ST_SEND);
+	m_hStatusRecv = GetDlgItem(m_hWnd, IDC_ST_RECV);
+	m_hStatusCurrFileSend = GetDlgItem(m_hWnd, IDC_ST_CURFILE_S);
+	m_hStatusCurrFileRecv = GetDlgItem(m_hWnd, IDC_ST_CURFILE_R);
 
 	//initialize registry: we retrieve the Nicknames and IPs and set in the combo-box
 	//the last used IP address. We save m_hKey for further use.
@@ -414,7 +362,7 @@ void MainDlg::DestroyTrayIcon()
 	{
 		NOTIFYICONDATA nid;
 		nid.cbSize = sizeof(NOTIFYICONDATA);
-		nid.hWnd = m_hDlg;
+		nid.hWnd = m_hWnd;
 		nid.uID = SYSTRAY_ICON;
 		Shell_NotifyIcon(NIM_DELETE, &nid);
 	}
@@ -431,7 +379,7 @@ void MainDlg::OnBrowse()
 	AppendMenuW(hMenu, MF_STRING, 2, L"for a folder");
 	
 	//displays a menu, so that the user would chose to pick a file or a folder
-	int result = TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LEFTBUTTON | TPM_NOANIMATION, rect.left, rect.bottom, 0, m_hDlg, 0);
+	int result = TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LEFTBUTTON | TPM_NOANIMATION, rect.left, rect.bottom, 0, m_hWnd, 0);
 
 	if (result)
 	{
@@ -975,7 +923,7 @@ void MainDlg::OnButtonConnect()
 checkeach:
 	switch (type)
 	{
-	case TYPE_INVALID: MessageBox(m_hDlg, L"This IP/Nickname is not valid. \n\nNicknames can contain only letters and spaces.\nIPs contain only numbers and dots (e.g. 81.20.100.142)",
+	case TYPE_INVALID: MessageBox(m_hWnd, L"This IP/Nickname is not valid. \n\nNicknames can contain only letters and spaces.\nIPs contain only numbers and dots (e.g. 81.20.100.142)",
 				L"Invalid Value", MB_ICONWARNING);
 		delete[] wstr;
 		return;
@@ -983,7 +931,7 @@ checkeach:
 	case TYPE_IP:
 		{
 			//in this case, wstr is the IP: it has been written an IP and pressed the "Connect" button.
-			NickNameDlg nickDlg(m_hDlg);
+			NickNameDlg nickDlg(m_hWnd);
 			if (IDOK == nickDlg.CreateModal())
 			{
 				//save the nick in the registry.

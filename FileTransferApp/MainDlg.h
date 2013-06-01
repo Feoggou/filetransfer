@@ -1,15 +1,13 @@
 #pragma once
 #include "General.h"
+#include "resource.h"
 
-#ifndef FILETRANSFERDLG_H
-#define FILETRANSFERDLG_H
+#include "Dialog.h"
 
-class MainDlg
+class MainDlg : public Dialog
 {
 	//PRIVATE DATA
 private:
-	//the HWND of the dialog
-	HWND		m_hDlg;
 	//the icon of the application
 	HICON		m_hIcon;
 	//the hkey HKLM\Software\FeoggouApp\SearchApp
@@ -52,19 +50,9 @@ public:
 	static BOOL		m_bIsMinimized;
 
 public:
-	MainDlg(void)
-	{
-		m_hDlg = NULL;
-		m_hKey = NULL;
-	}
+	MainDlg() : Dialog(nullptr, IDD_FILETRANSFERAPP_DIALOG) {m_hKey = nullptr;}
 
-	~MainDlg(void)
-	{
-	}
-
-	void DoModal();
-
-	HWND GetHandle() {return m_hDlg;}
+	~MainDlg(void) {}
 
 	//PRIVATE FUNCTIONS
 private:
@@ -107,6 +95,23 @@ private:
 	//displays an XP-compatible dialogbox that allows the user to select a file to send to the other computer
 	static void PickFolderXP();
 #endif
-};
 
-#endif//FILETRANSFERDLG_H
+private:
+	void OnClose() override;
+	void OnSysCommand(WPARAM cmd, int x, int y) override;
+	void OnCommand(WORD source, WORD id, HWND hControl) override;
+	INT_PTR OnDialogProcedure(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	void OnSize(WPARAM type, int new_width, int new_height) override;
+
+private:
+	void OnAbout();
+	void OnButtonSend();
+	void RestoreFromTray();
+
+	void OnEnableChild(HWND hChild, bool enable);
+	void OnSetItemText(LPARAM lParam, LPCWSTR text);
+
+	void OnTrayMessage(LPARAM lParam);
+	void OnMinimized();
+	void OnShowMessageBox(LPCWSTR message, LPCWSTR path);
+};

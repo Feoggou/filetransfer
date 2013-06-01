@@ -15,11 +15,11 @@ private:
 
 protected:
 	virtual void OnInitDialog() {}
-	virtual void OnDialogProcedure() {}
-	virtual void OnClose();
-	virtual void OnDestroy();
-	virtual void OnCommand(WORD /*code*/, WORD /*id*/, HWND /*hControl*/);
-	virtual void OnNotify(NMHDR*) {}
+	virtual INT_PTR OnDialogProcedure(UINT uMsg, WPARAM wParam, LPARAM lParam) {return 0;}
+	void OnClose() override;
+	void OnDestroy() override;
+	void OnCommand(WORD source, WORD id, HWND hControl) override;
+	void OnNotify(NMHDR*) override{}
 	virtual void OnOK() {}
 	virtual void OnCancel() {}
 
