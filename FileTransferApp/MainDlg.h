@@ -4,7 +4,7 @@
 #ifndef FILETRANSFERDLG_H
 #define FILETRANSFERDLG_H
 
-class CFileTransferDlg
+class MainDlg
 {
 	//PRIVATE DATA
 private:
@@ -52,17 +52,19 @@ public:
 	static BOOL		m_bIsMinimized;
 
 public:
-	CFileTransferDlg(void)
+	MainDlg(void)
 	{
 		m_hDlg = NULL;
 		m_hKey = NULL;
 	}
 
-	~CFileTransferDlg(void)
+	~MainDlg(void)
 	{
 	}
 
 	void DoModal();
+
+	HWND GetHandle() {return m_hDlg;}
 
 	//PRIVATE FUNCTIONS
 private:

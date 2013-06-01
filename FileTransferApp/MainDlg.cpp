@@ -1,6 +1,8 @@
-#include "FileTransferDlg.h"
+#include "MainDlg.h"
 #include "resource.h"
 #include "AboutDlg.h"
+
+#include "Application.h"
 
 #include "Recv.h"
 #include "Send.h"
@@ -17,45 +19,43 @@
 #define ID_RESTOREPROG		10001
 #define ID_EXITPROG			10002
 
-extern HINSTANCE hAppInstance;
-
 HWND hMainWnd = NULL;
-HWND CFileTransferDlg::m_hCheckRepairMode = NULL;
-HWND CFileTransferDlg::m_hStatusText = NULL;
-HWND CFileTransferDlg::m_hButtonConnect = NULL;
-HWND CFileTransferDlg::m_hButtonCreateConn = NULL;
-HWND CFileTransferDlg::m_hButtonSend = NULL;
-HWND CFileTransferDlg::m_hButtonBrowse = NULL;
-HWND CFileTransferDlg::m_hEditItemPath = NULL;
+HWND MainDlg::m_hCheckRepairMode = NULL;
+HWND MainDlg::m_hStatusText = NULL;
+HWND MainDlg::m_hButtonConnect = NULL;
+HWND MainDlg::m_hButtonCreateConn = NULL;
+HWND MainDlg::m_hButtonSend = NULL;
+HWND MainDlg::m_hButtonBrowse = NULL;
+HWND MainDlg::m_hEditItemPath = NULL;
 
-HWND CFileTransferDlg::m_hStatusSend = NULL;
-HWND CFileTransferDlg::m_hStatusRecv = NULL;
-HWND CFileTransferDlg::m_hStatusCurrFileSend = NULL;
-HWND CFileTransferDlg::m_hStatusCurrFileRecv = NULL;
-HWND CFileTransferDlg::m_hComboNickIP = NULL;
+HWND MainDlg::m_hStatusSend = NULL;
+HWND MainDlg::m_hStatusRecv = NULL;
+HWND MainDlg::m_hStatusCurrFileSend = NULL;
+HWND MainDlg::m_hStatusCurrFileRecv = NULL;
+HWND MainDlg::m_hComboNickIP = NULL;
 
-HWND CFileTransferDlg::m_hBarSend = NULL;
-HWND CFileTransferDlg::m_hBarRecv = NULL;
+HWND MainDlg::m_hBarSend = NULL;
+HWND MainDlg::m_hBarRecv = NULL;
 
-BOOL CFileTransferDlg::m_bIsMinimized = NULL;
+BOOL MainDlg::m_bIsMinimized = NULL;
 
-void CFileTransferDlg::DoModal()
+void MainDlg::DoModal()
 {
-	INT_PTR nResult = DialogBoxParamW(hAppInstance, MAKEINTRESOURCE(IDD_FILETRANSFERAPP_DIALOG), NULL, DlgProc, (LPARAM)this);
+	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(), MAKEINTRESOURCE(IDD_FILETRANSFERAPP_DIALOG), NULL, DlgProc, (LPARAM)this);
 	if (nResult == -1)
 		DisplayError();
 }
 
-INT_PTR CALLBACK CFileTransferDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK MainDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static CFileTransferDlg* pThis = NULL;
+	static MainDlg* pThis = NULL;
 
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
 		{
 			//save pThis and the HWND
-			pThis = (CFileTransferDlg*)lParam;
+			pThis = (MainDlg*)lParam;
 			pThis->m_hDlg = hDlg;
 			hMainWnd = hDlg;
 			pThis->OnInitDialog();
@@ -255,7 +255,7 @@ INT_PTR CALLBACK CFileTransferDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 				//we finally reset the status text and progressbar.
 				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Receiving", 2);
 				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 3);
-				SendMessage(CFileTransferDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
+				SendMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
 			}
 
 			//if it is the sender:
@@ -266,9 +266,9 @@ INT_PTR CALLBACK CFileTransferDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 				//we reset the progressbar only after
 				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Sending", 0);
 				SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 1);
-				SendMessage(CFileTransferDlg::m_hBarSend, PBM_SETPOS, 0, 0);
-				SendMessage(CFileTransferDlg::m_hCheckRepairMode, BM_SETCHECK, BST_UNCHECKED, 0);
-				SendMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)CFileTransferDlg::m_hCheckRepairMode, 1);
+				SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 0, 0);
+				SendMessage(MainDlg::m_hCheckRepairMode, BM_SETCHECK, BST_UNCHECKED, 0);
+				SendMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 1);
 			}
 		}
 		break;
@@ -279,7 +279,7 @@ INT_PTR CALLBACK CFileTransferDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 #include <math.h>
 
-void CFileTransferDlg::OnInitDialog()
+void MainDlg::OnInitDialog()
 {
 	//appending the "About" item in the system menu
 	{
@@ -296,7 +296,7 @@ void CFileTransferDlg::OnInitDialog()
 	}
 
 	//setting the icon
-	m_hIcon = LoadIcon(hAppInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+	m_hIcon = LoadIcon(Application::GetHInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
 	SendMessage(m_hDlg, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
 	SendMessage(m_hDlg, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
 
@@ -407,7 +407,7 @@ void CFileTransferDlg::OnInitDialog()
 	}
 }
 
-void CFileTransferDlg::DestroyTrayIcon()
+void MainDlg::DestroyTrayIcon()
 {
 	if (m_bIsMinimized)
 	{
@@ -419,7 +419,7 @@ void CFileTransferDlg::DestroyTrayIcon()
 	}
 }
 
-void CFileTransferDlg::OnBrowse()
+void MainDlg::OnBrowse()
 {
 	//we create the menu
 	RECT rect;
@@ -455,7 +455,7 @@ void CFileTransferDlg::OnBrowse()
 }
 
 #if _WIN32_WINNT == 0x0600
-void CFileTransferDlg::PickFileVista()
+void MainDlg::PickFileVista()
 {
 	//create a IFileOpenDialog object
 	IFileOpenDialog* pDlg;
@@ -552,7 +552,7 @@ void CFileTransferDlg::PickFileVista()
 	EnableWindow(m_hCheckRepairMode, false);
 }
 
-void CFileTransferDlg::PickFolderVista()
+void MainDlg::PickFolderVista()
 {
 	//we create a IFileOpenDialog object
 	IFileOpenDialog* pDlg;
@@ -652,13 +652,13 @@ void CFileTransferDlg::PickFolderVista()
 
 #else
 
-void CFileTransferDlg::PickFileXP()
+void MainDlg::PickFileXP()
 {
 	//we need a GetOpenFileName to retrieve a file
 	OPENFILENAME ofn = {0};
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hMainWnd;
-	ofn.hInstance = hAppInstance;
+	ofn.hInstance = Application::GetHInstance();
 	ofn.lpstrFile = new WCHAR[2000];
 	*ofn.lpstrFile = 0;
 	ofn.nMaxFile = 2000;
@@ -672,7 +672,7 @@ void CFileTransferDlg::PickFileXP()
 		if (dwError)
 		{
 			WCHAR wsError[500];
-			LoadStringW(hAppInstance, dwError, wsError, 500);
+			LoadStringW(Application::GetHInstance(), dwError, wsError, 500);
 			MessageBox(hMainWnd, wsError, 0, MB_ICONERROR);
 		}
 		delete[] ofn.lpstrFile;
@@ -703,7 +703,7 @@ void CFileTransferDlg::PickFileXP()
 	EnableWindow(m_hCheckRepairMode, false);
 }
 
-void CFileTransferDlg::PickFolderXP()
+void MainDlg::PickFolderXP()
 {	
 	//we need Shell Browser for this.
 	BROWSEINFOW bi = {0};
@@ -777,7 +777,7 @@ try_again:
 
 #endif
 
-void CFileTransferDlg::CloseAll()
+void MainDlg::CloseAll()
 {
 	//we need to close connection
 	bOrderEnd = TRUE;
@@ -905,7 +905,7 @@ void CFileTransferDlg::CloseAll()
 #define TYPE_NICKNAME	2
 
 //the "Connect" button was pressed
-void CFileTransferDlg::OnButtonConnect()
+void MainDlg::OnButtonConnect()
 {
 	_ASSERTE(Connected == Conn::NotConnected);
 
@@ -1075,7 +1075,7 @@ checkeach:
 	}
 }
 
-void CFileTransferDlg::ConnectToServer()
+void MainDlg::ConnectToServer()
 {
 	_ASSERTE(Connected == Conn::NotConnected);
 
@@ -1092,7 +1092,7 @@ void CFileTransferDlg::ConnectToServer()
 	Recv::hConnThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Recv::ConnThreadProc, 0, 0, 0);
 }
 
-void CFileTransferDlg::CreateConnection()
+void MainDlg::CreateConnection()
 {
 	_ASSERTE(Connected == Conn::NotConnected);
 
@@ -1110,7 +1110,7 @@ void CFileTransferDlg::CreateConnection()
 	Send::hConnThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ConnThreadProc, 0, 0, 0);
 }
 
-void CFileTransferDlg::UpdateUIDisconnected()
+void MainDlg::UpdateUIDisconnected()
 {
 	//first off, enable the other controls:
 	EnableWindow(m_hButtonCreateConn, true);
