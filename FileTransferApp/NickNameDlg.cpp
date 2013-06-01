@@ -3,7 +3,7 @@
 
 #include "Application.h"
 
-CNickNameDlg::~CNickNameDlg(void)
+NickNameDlg::~NickNameDlg(void)
 {
 	/*if (m_wsText)
 	{
@@ -12,7 +12,7 @@ CNickNameDlg::~CNickNameDlg(void)
 	}*/
 }
 
-void CNickNameDlg::OnOK()
+void NickNameDlg::OnOK()
 {
 	//retrieve the IDCE_NICKNAME editbox
 	HWND hEdit = GetDlgItem(m_hWnd, IDCE_NICKNAME);

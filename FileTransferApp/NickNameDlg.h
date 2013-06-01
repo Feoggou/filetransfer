@@ -6,14 +6,14 @@
 
 #include <memory>
 
-class CNickNameDlg : public Dialog
+class NickNameDlg : public Dialog
 {
 private:
 	std::unique_ptr<WCHAR[]>		m_wsText;
 
 public:
-	CNickNameDlg(HWND hParent): Dialog(hParent, IDD_NICKNAME) {m_wsText = nullptr;}
-	~CNickNameDlg(void);
+	NickNameDlg(HWND hParent): Dialog(hParent, IDD_NICKNAME) {m_wsText = nullptr;}
+	~NickNameDlg(void);
 
 	//retrieves the text written in the editbox.
 	const WCHAR* GetText() const {return m_wsText.get();}
