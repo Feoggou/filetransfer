@@ -983,8 +983,8 @@ checkeach:
 	case TYPE_IP:
 		{
 			//in this case, wstr is the IP: it has been written an IP and pressed the "Connect" button.
-			CNickNameDlg nickDlg;
-			if (IDOK == nickDlg.DoModal(m_hDlg))
+			CNickNameDlg nickDlg(m_hDlg);
+			if (IDOK == nickDlg.CreateModal())
 			{
 				//save the nick in the registry.
 				//wsText SHOULD NOT be deleted: it is destroyed automatically by the dialog.

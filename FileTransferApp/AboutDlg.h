@@ -15,6 +15,6 @@ private:
 
 private:
 	void OnInitDialog() override;
-	void OnCommand(WORD code, WORD id, HWND hControl) override;
+	void OnOK() override;
 	void OnNotify(NMHDR*) override;
 };

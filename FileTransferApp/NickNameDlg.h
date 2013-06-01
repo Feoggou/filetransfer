@@ -1,25 +1,23 @@
 #pragma once
 
-#ifndef NICKNAMEDLG_H
-#define NICKNAMEDLG_H
-
 #include "General.h"
+#include "Dialog.h"
+#include "resource.h"
 
-class CNickNameDlg
+#include <memory>
+
+class CNickNameDlg : public Dialog
 {
 private:
-	HWND		m_hDlg;
-	WCHAR*		m_wsText;
+	std::unique_ptr<WCHAR[]>		m_wsText;
 
 public:
-	CNickNameDlg(void);
+	CNickNameDlg(HWND hParent): Dialog(hParent, IDD_NICKNAME) {m_wsText = nullptr;}
 	~CNickNameDlg(void);
 
-	INT_PTR DoModal(HWND hParent);
-	static INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	//retrieves the text written in the editbox.
-	const WCHAR* GetText();
-};
+	const WCHAR* GetText() const {return m_wsText.get();}
 
-#endif//NICKNAMEDLG_H
+private:
+	void OnOK() override;
+};

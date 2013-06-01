@@ -54,11 +54,9 @@ void AboutDlg::OnInitDialog()
 	freeaddrinfo(pResults);
 }
 
-void AboutDlg::OnCommand(WORD /*code*/, WORD id, HWND /*hControl*/)
+void AboutDlg::OnOK()
 {
-	if (id == IDOK) {
-		OnClose();
-	}
+	OnClose();
 }
 
 void AboutDlg::OnNotify(NMHDR* pNMHDR)

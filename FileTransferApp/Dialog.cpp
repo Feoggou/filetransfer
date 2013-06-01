@@ -6,11 +6,13 @@
 #include <set>
 #include <algorithm>
 
-void Dialog::CreateModal()
+INT_PTR Dialog::CreateModal()
 {
 	INT_PTR nResult = DialogBoxParamW(Application::GetHInstance(), MAKEINTRESOURCE(m_resourceID), m_hParent, DialogProc, (LPARAM)this);
 	if (nResult == -1)
 		DisplayError();
+
+	return nResult;
 }
 
 INT_PTR CALLBACK Dialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -36,13 +38,7 @@ INT_PTR CALLBACK Dialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_CLOSE: pThis->OnClose(); break;
 	case WM_DESTROY: pThis->OnDestroy(); break;
 	case WM_COMMAND: pThis->OnCommand(HIWORD(wParam), LOWORD(wParam), (HWND)lParam); break;
-
-	case WM_NOTIFY:
-		{
-			NMHDR* pNMHDR = (NMHDR*)lParam;
-			pThis->OnNotify(pNMHDR);	
-		}
-		break;
+	case WM_NOTIFY:	{ NMHDR* pNMHDR = (NMHDR*)lParam; pThis->OnNotify(pNMHDR);}	break;
 	}
 
 	return 0;
@@ -58,4 +54,15 @@ void Dialog::OnDestroy()
 {
 	_ASSERT(m_hWnd);
 	EndDialog(m_hWnd, IDCANCEL);
+}
+
+void Dialog::OnCommand(WORD /*code*/, WORD id, HWND hControl)
+{
+	if (hControl) {
+		if (id == IDOK) {
+			OnOK();
+		} else if (id == IDCANCEL) {
+			OnCancel();
+		}
+	}
 }
