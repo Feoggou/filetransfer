@@ -91,9 +91,9 @@ private:
 #define PickFolder	PickFolderXP
 
 	//displays an XP-compatible dialogbox that allows the user to select a file to send to the other computer
-	static void PickFileXP();
+	static void PickFileXP(HWND hDlg);
 	//displays an XP-compatible dialogbox that allows the user to select a file to send to the other computer
-	static void PickFolderXP();
+	static void PickFolderXP(HWND hDlg);
 #endif
 
 private:

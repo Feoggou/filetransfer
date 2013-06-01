@@ -22,7 +22,6 @@
 #define ID_RESTOREPROG		10001
 #define ID_EXITPROG			10002
 
-HWND hMainWnd = NULL;
 HWND MainDlg::m_hCheckRepairMode = NULL;
 HWND MainDlg::m_hStatusText = NULL;
 HWND MainDlg::m_hButtonConnect = NULL;
@@ -175,7 +174,7 @@ void MainDlg::OnShowMessageBox(LPCWSTR message, LPCWSTR path)
 	//if it is the receiver:
 	if (path)
 	{
-		if (MessageBoxW(hMainWnd, message, L"Transfer finished", MB_YESNO) == IDYES)
+		if (MessageBoxW(m_hWnd, message, L"Transfer finished", MB_YESNO) == IDYES)
 		{
 			ShellExecute(0, L"explore", path, NULL, NULL, SW_SHOWNORMAL);
 		}
@@ -184,22 +183,22 @@ void MainDlg::OnShowMessageBox(LPCWSTR message, LPCWSTR path)
 		delete[] path;
 
 		//we finally reset the status text and progressbar.
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Receiving", 2);
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 3);
+		SendMessage(m_hWnd, WM_SETITEMTEXT, (WPARAM)L"Not Receiving", 2);
+		SendMessage(m_hWnd, WM_SETITEMTEXT, (WPARAM)L"none", 3);
 		SendMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
 	}
 
 	//if it is the sender:
 	else
 	{
-		MessageBoxW(hMainWnd, message, L"Transfer finished!", MB_ICONINFORMATION);
+		MessageBoxW(m_hWnd, message, L"Transfer finished!", MB_ICONINFORMATION);
 
 		//we reset the progressbar only after
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"Not Sending", 0);
-		SendMessage(hMainWnd, WM_SETITEMTEXT, (WPARAM)L"none", 1);
+		SendMessage(m_hWnd, WM_SETITEMTEXT, (WPARAM)L"Not Sending", 0);
+		SendMessage(m_hWnd, WM_SETITEMTEXT, (WPARAM)L"none", 1);
 		SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 0, 0);
 		SendMessage(MainDlg::m_hCheckRepairMode, BM_SETCHECK, BST_UNCHECKED, 0);
-		SendMessage(hMainWnd, WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 1);
+		SendMessage(m_hWnd, WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 1);
 	}
 }
 
@@ -391,20 +390,20 @@ void MainDlg::OnBrowse()
 	{
 	case 1://FILE
 		{
-			PickFile();
+			PickFile(m_hWnd);
 		}
 		break;
 
 	case 2://FOLDER
 		{
-			PickFolder();
+			PickFolder(m_hWnd);
 		}
 		break;
 	}
 }
 
 #if _WIN32_WINNT == 0x0600
-void MainDlg::PickFileVista()
+void MainDlg::PickFileVista(HWND hDlg)
 {
 	//create a IFileOpenDialog object
 	IFileOpenDialog* pDlg;
@@ -446,7 +445,7 @@ void MainDlg::PickFileVista()
 	pDlg->SetOptions(FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST); 
 
 	//show the dialogbox
-	hr = pDlg->Show(hMainWnd);
+	hr = pDlg->Show(m_hWnd);
 	//if error or canceled
 	if (FAILED(hr))
 	{
@@ -501,7 +500,7 @@ void MainDlg::PickFileVista()
 	EnableWindow(m_hCheckRepairMode, false);
 }
 
-void MainDlg::PickFolderVista()
+void MainDlg::PickFolderVista(HWND hDlg)
 {
 	//we create a IFileOpenDialog object
 	IFileOpenDialog* pDlg;
@@ -543,7 +542,7 @@ void MainDlg::PickFolderVista()
 	pDlg->SetOptions(FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST | FOS_PICKFOLDERS); 
 
 	//show the dialogbox and retrieve the result
-	hr = pDlg->Show(hMainWnd);
+	hr = pDlg->Show(m_hWnd);
 	//error or canceled
 	if (FAILED(hr))
 	{
@@ -601,12 +600,12 @@ void MainDlg::PickFolderVista()
 
 #else
 
-void MainDlg::PickFileXP()
+void MainDlg::PickFileXP(HWND hDlg)
 {
 	//we need a GetOpenFileName to retrieve a file
 	OPENFILENAME ofn = {0};
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hMainWnd;
+	ofn.hwndOwner = hDlg;
 	ofn.hInstance = Application::GetHInstance();
 	ofn.lpstrFile = new WCHAR[2000];
 	*ofn.lpstrFile = 0;
@@ -622,7 +621,7 @@ void MainDlg::PickFileXP()
 		{
 			WCHAR wsError[500];
 			LoadStringW(Application::GetHInstance(), dwError, wsError, 500);
-			MessageBox(hMainWnd, wsError, 0, MB_ICONERROR);
+			MessageBox(hDlg, wsError, 0, MB_ICONERROR);
 		}
 		delete[] ofn.lpstrFile;
 		return;
@@ -652,11 +651,11 @@ void MainDlg::PickFileXP()
 	EnableWindow(m_hCheckRepairMode, false);
 }
 
-void MainDlg::PickFolderXP()
+void MainDlg::PickFolderXP(HWND hDlg)
 {	
 	//we need Shell Browser for this.
 	BROWSEINFOW bi = {0};
-	bi.hwndOwner = hMainWnd;
+	bi.hwndOwner = hDlg;
 	bi.lpszTitle = L"Chose the folder you wish to send:";
 	bi.ulFlags = BIF_EDITBOX;
 	bi.pszDisplayName = new WCHAR[MAX_PATH];
@@ -689,7 +688,7 @@ try_again:
 			CoTaskMemFree(pidlResult);
 			pShellItem->Release();
 
-			MessageBox(hMainWnd, L"Invalid selection. Chose a directory or a drive!", L"Invalid selection!", MB_ICONWARNING);
+			MessageBox(hDlg, L"Invalid selection. Chose a directory or a drive!", L"Invalid selection!", MB_ICONWARNING);
 			goto try_again;
 		}
 
@@ -990,7 +989,7 @@ checkeach:
 
 				if (dwError == ERROR_FILE_NOT_FOUND)
 				{
-					MessageBox(hMainWnd, L"This nickname does not exist!\n\nPlease select a nickname from the\
+					MessageBox(m_hWnd, L"This nickname does not exist!\n\nPlease select a nickname from the\
  list or write an IP to connect to.", L"Unrecognized nickname!", MB_ICONWARNING);
 				}
 
