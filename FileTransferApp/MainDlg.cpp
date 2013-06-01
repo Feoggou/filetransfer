@@ -152,7 +152,7 @@ void MainDlg::OnMinimized()
 	nid.uID = SYSTRAY_ICON;
 	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	nid.uCallbackMessage = WM_TRAYMSG;
-	nid.hIcon = m_hIcon;
+	nid.hIcon = theApp->GetAppIcon();
 	StringCopyW(nid.szTip, L"File Transfer Application");
 
 	Shell_NotifyIcon(NIM_ADD, &nid);
@@ -244,9 +244,9 @@ void MainDlg::OnInitDialog()
 	}
 
 	//setting the icon
-	m_hIcon = LoadIcon(Application::GetHInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
-	SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
-	SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
+	HICON hIcon = theApp->GetAppIcon();
+	SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+	SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 
 	//initializing handles and controls: here the progress bars
 	m_hBarRecv = GetDlgItem(m_hWnd, IDC_PROG_RECV);
@@ -271,87 +271,12 @@ void MainDlg::OnInitDialog()
 	m_hStatusCurrFileSend = GetDlgItem(m_hWnd, IDC_ST_CURFILE_S);
 	m_hStatusCurrFileRecv = GetDlgItem(m_hWnd, IDC_ST_CURFILE_R);
 
-	//initialize registry: we retrieve the Nicknames and IPs and set in the combo-box
-	//the last used IP address. We save m_hKey for further use.
-	//m_hKey will be HKLM\Software\FeoggouApp\FileTransferApp
-	DWORD dwError = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software", 0, KEY_READ, &m_hKey);
-	if (dwError != 0)
-	{
-		DisplayError(dwError);
-		PostQuitMessage(-1);
-		return;
-	}
+	std::wstring current_friend = theApp->GetCurrentFriend();
+	SetWindowTextW(m_hComboNickIP, current_friend.data());
 
-	HKEY hAux = m_hKey;
-	dwError = RegCreateKeyExW(hAux, L"FeoggouApp", 0, 0, 0, KEY_READ | KEY_WRITE, 0, &m_hKey, 0);
-	if (dwError != 0)
-	{
-		RegCloseKey(hAux);
-
-		DisplayError(dwError);
-		PostQuitMessage(-1);
-		return;
-	}
-	RegCloseKey(hAux);
-	hAux = m_hKey;
-
-	dwError = RegCreateKeyExW(hAux, L"FileTransferApp", 0, 0, 0, KEY_READ | KEY_WRITE, 0, &m_hKey, 0);
-	if (dwError != 0)
-	{
-		RegCloseKey(hAux);
-
-		DisplayError(dwError);
-		PostQuitMessage(-1);
-		return;
-	}
-	RegCloseKey(hAux);
-
-	//now m_hKey is HKLM\Software\FeoggouApp\FileTransferApp
-
-	WCHAR wsValueName[35] = {0}, wsData[100] = {0};
-	int i = 0;
-
-	DWORD dwValueNr = 35, dwDataNr = 100;
-	LONG result;
-	//retrieving all values & datas: values = nicks; data = IPs
-	while (ERROR_SUCCESS == (result = RegEnumValueW(m_hKey, i, wsValueName, &dwValueNr, 0, 0, (BYTE*)wsData, &dwDataNr)))
-	{
-		if (i == 0)
-		{
-			//the first one is saved for further use
-			SetWindowTextW(m_hComboNickIP, wsValueName);
-		}
-
-		//we don't add empty strings (i.e. the default value, if it has a data as null).
-		if (*wsValueName)
-			SendMessage(m_hComboNickIP, CB_ADDSTRING, 0, (LPARAM)wsValueName);
-
-		dwValueNr = 35;
-		dwDataNr = 100;
-		i++;
-	}
-	if (result !=  ERROR_NO_MORE_ITEMS)
-	{
-		DisplayError(result);
-		PostQuitMessage(-1);
-		return;
-	}
-
-	//retrieve the default value data
-	dwError = RegQueryValueExW(m_hKey, 0, 0, 0, (BYTE*)wsData, &dwDataNr);
-	if (0 != dwError && ERROR_FILE_NOT_FOUND != dwError)
-	{
-		RegCloseKey(hAux);
-
-		DisplayError(dwError);
-		PostQuitMessage(-1);
-		return;
-	}
-
-	//if there is a default value set, we set it here. (otherwise, the value already set remains)
-	if (dwError != ERROR_FILE_NOT_FOUND && *wsData)
-	{
-		SetWindowTextW(m_hComboNickIP, wsData);
+	std::vector<std::wstring> friends = theApp->GetFriends();
+	for (std::vector<std::wstring>::const_iterator i = std::begin(friends); i != std::end(friends); ++i) {
+		SendMessage(m_hComboNickIP, CB_ADDSTRING, 0, (LPARAM)i->data());
 	}
 }
 
@@ -937,22 +862,8 @@ checkeach:
 				//wsText SHOULD NOT be deleted: it is destroyed automatically by the dialog.
 				const WCHAR* wsText = nickDlg.GetText();
 				ComboBox_AddString(m_hComboNickIP, wsText);
-
-				//we write into the registry the nickname and its associated IP
-				DWORD cbData = (StringLenW(wstr) + 1) * 2;
-				DWORD dwError = RegSetValueExW(m_hKey, wsText, 0, REG_SZ, (BYTE*)wstr, cbData);
-				if (ERROR_SUCCESS != dwError)
-				{
-					DisplayError(dwError);
-				}
-
-				//we set into the registry this nickname as the last nickname the computer was connected to:
-				cbData = (StringLenW(wsText) + 1) * 2;
-				dwError = RegSetValueExW(m_hKey, 0, 0, REG_SZ, (BYTE*)wsText, cbData);
-				if (ERROR_SUCCESS != dwError)
-				{
-					DisplayError(dwError);
-				}
+				
+				theApp->SaveFriend(wsText, wstr);
 
 				//we set the nickname (instead of leaving the IP) in the combobox text:
 				SetWindowText(m_hComboNickIP, wsText);
@@ -979,42 +890,17 @@ checkeach:
 		{
 			//in this case, wstr is NICKNAME: it has been written a NICKNAME and pressed the "Connect" button.
 			//seek value into the registry
-			WCHAR wsIP[31];
-			DWORD cbSize = 31;
 
-			DWORD dwError = RegQueryValueExW(m_hKey, wstr, 0, 0, (BYTE*)wsIP, &cbSize);
-			if (ERROR_SUCCESS != dwError)
-			{
-				delete[] wstr;
+			std::wstring ip = theApp->GetIpOfFriend(wstr);
 
-				if (dwError == ERROR_FILE_NOT_FOUND)
-				{
-					MessageBox(m_hWnd, L"This nickname does not exist!\n\nPlease select a nickname from the\
- list or write an IP to connect to.", L"Unrecognized nickname!", MB_ICONWARNING);
-				}
-
-				else
-				{
-					DisplayError(dwError);
-				}
-				return;
-			}
-
-			//we set into the registry this nickname as the last nickname the computer was connected to:
-			DWORD cbData = (StringLenW(wstr) + 1) * 2;
-			dwError = RegSetValueExW(m_hKey, 0, 0, REG_SZ, (BYTE*)wstr, cbData);
-			if (ERROR_SUCCESS != dwError)
-			{
-				delete[] wstr;
-				DisplayError(dwError);
-			}
+			theApp->SetLastFriend(wstr);
 
 			//we no longer need the Nickname
 			delete[] wstr;
 
 			//we replace the old Server IP with this new IP (wsIP)
 			if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
-			CSocketClient::m_sServerIP = StringWtoA(wsIP);
+			CSocketClient::m_sServerIP = StringWtoA(ip.data());
 
 			//we connect to the server here:
 			ConnectToServer();
@@ -1085,19 +971,9 @@ void MainDlg::UpdateUIDisconnected()
 	SendMessage(m_hBarRecv, PBM_SETPOS, 0, 0);
 	SendMessage(m_hBarSend, PBM_SETPOS, 0, 0);
 
-	//retrieve the last Nickname this computer was connected to:
-	DWORD dwNickSize = 20;
-	WCHAR wsNick[20];
-	DWORD dwError = RegQueryValueExW(m_hKey, 0, 0, 0, (BYTE*)wsNick, &dwNickSize);
-	if (0 != dwError && ERROR_FILE_NOT_FOUND != dwError)
-	{
-		DisplayError(dwError);
-	}
-
-	//if there is a default value set, we set it here. (otherwise, the value already set remains)
-	if (dwError != ERROR_FILE_NOT_FOUND && *wsNick)
-	{
-		SetWindowTextW(m_hComboNickIP, wsNick);
+	std::wstring last_friend = theApp->GetLastFriend();
+	if (!last_friend.empty()) {
+		SetWindowTextW(m_hComboNickIP, last_friend.data());
 	}
 
 	//status changed to "Not Connected"

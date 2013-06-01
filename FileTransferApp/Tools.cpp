@@ -196,7 +196,7 @@ BOOL PathFileExistsEx(const WCHAR* wsPath)
 	return true;
 }
 
-char* StringWtoA(WCHAR* wstr)
+char* StringWtoA(const WCHAR* wstr)
 {
 	int len = StringLenW(wstr);
 	len++;

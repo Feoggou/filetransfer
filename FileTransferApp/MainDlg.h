@@ -6,13 +6,6 @@
 
 class MainDlg : public Dialog
 {
-	//PRIVATE DATA
-private:
-	//the icon of the application
-	HICON		m_hIcon;
-	//the hkey HKLM\Software\FeoggouApp\SearchApp
-	HKEY		m_hKey;
-
 	//PUBLIC DATA
 public:
 	//STATIC ITEMS
@@ -50,7 +43,7 @@ public:
 	static BOOL		m_bIsMinimized;
 
 public:
-	MainDlg() : Dialog(nullptr, IDD_FILETRANSFERAPP_DIALOG) {m_hKey = nullptr;}
+	MainDlg() : Dialog(nullptr, IDD_FILETRANSFERAPP_DIALOG) {}
 
 	~MainDlg(void) {}
 

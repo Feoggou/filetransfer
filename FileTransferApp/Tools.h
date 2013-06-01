@@ -19,7 +19,7 @@ BOOL CalcFileSize(const WCHAR* wsPath, LARGE_INTEGER& liSize);
 BOOL PathFileExistsEx(const WCHAR* wsPath);
 
 //converts a wide string into an ansi string
-char* StringWtoA(WCHAR* wstr);
+char* StringWtoA(const WCHAR* wstr);
 
 //formats the time in hh:mm:ss format
 void FormatTime(WCHAR wsTime[20], DWORD dTime);
