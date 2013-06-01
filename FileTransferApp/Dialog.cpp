@@ -40,8 +40,7 @@ INT_PTR CALLBACK Dialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_NOTIFY:
 		{
 			NMHDR* pNMHDR = (NMHDR*)lParam;
-			pThis->OnNotify(pNMHDR);
-			
+			pThis->OnNotify(pNMHDR);	
 		}
 		break;
 	}

@@ -83,7 +83,7 @@ INT_PTR CALLBACK MainDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 		{
 			if ((wParam & 0xFFF0) == IDMI_ABOUT)
 			{
-				CAboutDlg dlgAbout(hDlg);
+				AboutDlg dlgAbout(hDlg);
 				dlgAbout.CreateModal();
 			}
 		}
@@ -95,7 +95,7 @@ INT_PTR CALLBACK MainDlg::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 			{
 			case IDC_ABOUT:
 				{
-					CAboutDlg dlgAbout(hDlg);
+					AboutDlg dlgAbout(hDlg);
 					dlgAbout.CreateModal();
 				}
 				break;

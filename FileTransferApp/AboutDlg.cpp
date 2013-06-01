@@ -5,7 +5,7 @@
 
 #include "Application.h"
 
-void CAboutDlg::OnInitDialog()
+void AboutDlg::OnInitDialog()
 {
 	//showing the ip of the user
 	char sHostName[300];
@@ -54,14 +54,14 @@ void CAboutDlg::OnInitDialog()
 	freeaddrinfo(pResults);
 }
 
-void CAboutDlg::OnCommand(WORD /*code*/, WORD id, HWND /*hControl*/)
+void AboutDlg::OnCommand(WORD /*code*/, WORD id, HWND /*hControl*/)
 {
 	if (id == IDOK) {
 		OnClose();
 	}
 }
 
-void CAboutDlg::OnNotify(NMHDR* pNMHDR)
+void AboutDlg::OnNotify(NMHDR* pNMHDR)
 {
 	if (pNMHDR->code == NM_CLICK)
 	{

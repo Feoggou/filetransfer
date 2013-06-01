@@ -4,14 +4,14 @@
 #include "Dialog.h"
 #include "resource.h"
 
-class CAboutDlg: public Dialog
+class AboutDlg: public Dialog
 {
 public:
-	CAboutDlg(HWND hParent): Dialog(hParent, IDD_ABOUTBOX) {}
-	~CAboutDlg() {}
+	AboutDlg(HWND hParent): Dialog(hParent, IDD_ABOUTBOX) {}
+	~AboutDlg() {}
 
 private:
-	CAboutDlg(const CAboutDlg&);
+	AboutDlg(const AboutDlg&);
 
 private:
 	void OnInitDialog() override;
