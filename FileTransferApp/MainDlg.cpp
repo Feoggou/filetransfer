@@ -457,21 +457,9 @@ void MainDlg::CloseAll()
 	}
 
 	//these 2 must have been closed allready
-	if (Recv::hConnThread != INVALID_HANDLE_VALUE)
-	{
-		//it closes itself after finishing
-		WaitForSingleObject(Recv::hConnThread, INFINITE);
+	m_recv.StopThreads();
 
-#ifdef _DEBUG
-		//Recv::hConnThread should now be closed and set to INVALID_HANDLE_VALUE
-		_ASSERTE(Recv::hConnThread == INVALID_HANDLE_VALUE);
-
-		CloseHandle(Recv::hConnThread);
-		Recv::hConnThread = INVALID_HANDLE_VALUE;
-#endif
-	}
-
-	if (Send::hConnThread != INVALID_HANDLE_VALUE)
+	if (Send::ConnThreadProc != INVALID_HANDLE_VALUE)
 	{
 		//it closes itself after finishing
 		WaitForSingleObject(Send::hConnThread, INFINITE);
@@ -486,17 +474,7 @@ void MainDlg::CloseAll()
 	//we wait for them, and then close them.
 	//the sockets are already closed and bOrderEnd is set, so there should be no problem
 
-	//first the Recv::hThread
-	if (Recv::hThread != INVALID_HANDLE_VALUE)
-	{
-		while (WAIT_TIMEOUT == WaitForSingleObject(Recv::hThread, 100))
-		{
-			SleepEx(50, TRUE);
-		}
-
-		CloseHandle(Recv::hThread);
-		Recv::hThread = INVALID_HANDLE_VALUE;
-	}
+	
 
 	//now close the Send::hThread
 	if (Send::hThread != INVALID_HANDLE_VALUE)
@@ -656,7 +634,7 @@ void MainDlg::ConnectToServer()
 	SetWindowTextW(m_hStatusText, L"The client is starting...");
 
 	//creating the connection
-	Recv::hConnThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Recv::ConnThreadProc, 0, 0, 0);
+	m_recv.StartConnThread();
 }
 
 void MainDlg::CreateConnection()

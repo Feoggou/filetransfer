@@ -1,6 +1,7 @@
 #pragma once
 #include "General.h"
 #include "resource.h"
+#include "Recv.h"
 
 #include "Dialog.h"
 
@@ -108,4 +109,7 @@ private:
 	void OnMinimized();
 	//TODO: split in two, based on path = NULL or not
 	void OnShowMessageBox(LPCWSTR message, LPCWSTR path);
+
+private:
+	Recv m_recv;
 };

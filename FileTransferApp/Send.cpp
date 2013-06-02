@@ -824,7 +824,8 @@ final:
 	
 	if (!bOrderEnd)
 	{
-		Recv::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Recv::ThreadProc, theApp->GetMainWindow(), 0, 0);
+		//TODO: why was Recv::thread started here?
+		//Recv::thread.Start(Recv::ThreadProc/*, theApp->GetMainWindow()*/);
 		Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, theApp->GetMainWindow(), 0, 0);
 
 		//after the connection is successful:

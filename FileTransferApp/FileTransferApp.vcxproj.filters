@@ -23,18 +23,15 @@
     <Filter Include="Code\Core">
       <UniqueIdentifier>{40310988-7460-4bd2-a653-fb38382e7678}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Code\Threading">
+      <UniqueIdentifier>{ee6f150a-9e97-424c-9970-927c9abf99b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRC.cpp">
       <Filter>Code</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Code</Filter>
-    </ClCompile>
-    <ClCompile Include="Recv.cpp">
-      <Filter>Code</Filter>
-    </ClCompile>
-    <ClCompile Include="Send.cpp">
       <Filter>Code</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
@@ -76,6 +73,15 @@
     <ClCompile Include="Socket.cpp">
       <Filter>Code\Network</Filter>
     </ClCompile>
+    <ClCompile Include="Recv.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="Send.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -84,13 +90,7 @@
     <ClInclude Include="CRC.h">
       <Filter>Code</Filter>
     </ClInclude>
-    <ClInclude Include="Recv.h">
-      <Filter>Code</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Code</Filter>
-    </ClInclude>
-    <ClInclude Include="Send.h">
       <Filter>Code</Filter>
     </ClInclude>
     <ClInclude Include="String.h">
@@ -146,6 +146,15 @@
     </ClInclude>
     <ClInclude Include="Socket.h">
       <Filter>Code\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Recv.h">
+      <Filter>Code\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="Send.h">
+      <Filter>Code\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Code\Threading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

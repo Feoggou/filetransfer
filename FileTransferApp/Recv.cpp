@@ -25,9 +25,6 @@ the folder you have on your disk. Do you want to receive it? If yes, you will re
 #define IDS_FOLDER_COULD_NOT_BE_CREATED L"Folder \"%s\" could not be created."
 #define IDS_FINISHED_TRANSFERRING L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!"
 
-HANDLE Recv::hThread = INVALID_HANDLE_VALUE;
-HANDLE Recv::hConnThread = INVALID_HANDLE_VALUE;
-
 CDestFile Recv::File;
 DWORD Recv::dwCurrentPartGlobal = 0;
 BOOL Recv::bModeRepair = false;
@@ -410,8 +407,9 @@ inline BOOL Recv::HandShake()
 	return true;
 }
 
-DWORD Recv::ThreadProc(void)
+DWORD Recv::ThreadProc(void* p)
 {
+	Recv* pThis = (Recv*)p;
 	//first of all, we must initialize all sockets
 
 	//while it has not been ordered to end the program we continue to receive data
@@ -425,26 +423,26 @@ DWORD Recv::ThreadProc(void)
 		Recv::dwNrGreatParts = 0;
 
 		//here we wait until a file will be transferred!
-		if (false == WaitForDataReceive()) return 0;
+		if (false == pThis->WaitForDataReceive()) return 0;
 
 		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
 
 		//RETRIEVING THE ITEM TYPE
-		if (false == ReceiveDataSimple(&Recv::itemType, sizeof(Recv::itemType))) return false;
+		if (false == pThis->ReceiveDataSimple(&Recv::itemType, sizeof(Recv::itemType))) return false;
 
 		if (Recv::itemType == ItemType::Folder)
 		{
 			//RECEIVE THE MODE: NORMAL/REPAIR
-			if (false == ReceiveDataSimple(&Recv::bModeRepair, sizeof(Recv::bModeRepair))) return 0;
+			if (false == pThis->ReceiveDataSimple(&Recv::bModeRepair, sizeof(Recv::bModeRepair))) return 0;
 		}
 		
 		//RETRIEVING THE FILENAME LENGTH
 		DWORD len = 0;
-		if (false == ReceiveDataSimple(&len, sizeof(len))) return false;
+		if (false == pThis->ReceiveDataSimple(&len, sizeof(len))) return false;
 
 		//RETRIEVING THE FILENAME STRING
 		Recv::wsParentDisplayName = new WCHAR[len];
-		if (false == ReceiveDataSimple(Recv::wsParentDisplayName, len * 2)) return false;
+		if (false == pThis->ReceiveDataSimple(Recv::wsParentDisplayName, len * 2)) return false;
 
 		//RECEIVEING THE Size of the file/files and optionally, the number of items.
 		int nCount = 0;
@@ -452,14 +450,14 @@ DWORD Recv::ThreadProc(void)
 		if (Recv::itemType == ItemType::File)
 		{
 			//receiving only the size
-			if (false == ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
+			if (false == pThis->ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
 		}
 		else
 		{
 			//receiving, first the nCount and then the liSize
-			if (false == ReceiveDataSimple(&nCount, sizeof(nCount))) return false;
+			if (false == pThis->ReceiveDataSimple(&nCount, sizeof(nCount))) return false;
 
-			if (false == ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
+			if (false == pThis->ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
 		}
 
 		//we create the handshake thread: we send and receive handshake while the user decides
@@ -528,7 +526,7 @@ DWORD Recv::ThreadProc(void)
 			CloseHandle(hHandshake);
 
 			bConfirmed = false;
-			if (false == SendDataSimple(&bConfirmed, sizeof(bool))) return false;
+			if (false == pThis->SendDataSimple(&bConfirmed, sizeof(bool))) return false;
 			continue;
 		}
 		delete[] wsMessage;
@@ -540,13 +538,13 @@ DWORD Recv::ThreadProc(void)
 		if (!bModeRepair)
 		{
 			//Vista & Win7 / XP
-			bConfirmed = Recv::GetConfirmed(&wsSavePath.s, liSize);
+			bConfirmed = pThis->GetConfirmed(&wsSavePath.s, liSize);
 			
 		}
 		else
 		{
 			//Vista & Win7 / XP
-			bConfirmed = GetConfirmedRepair(&wsSavePath.s, liSize);
+			bConfirmed = pThis->GetConfirmedRepair(&wsSavePath.s, liSize);
 		}
 
 		CoUninitialize();
@@ -560,7 +558,7 @@ DWORD Recv::ThreadProc(void)
 
 		if (0 == dwExitCode) return false;
 
-		if (false == SendDataSimple(&bConfirmed, sizeof(bool))) return false;
+		if (false == pThis->SendDataSimple(&bConfirmed, sizeof(bool))) return false;
 		//perhaps the user has canceled receiving the item(s) here.
 		if (!bConfirmed) continue;
 
@@ -581,7 +579,7 @@ DWORD Recv::ThreadProc(void)
 			Recv::wsChildFileName = new WCHAR[lenChild];
 			StringCopy(Recv::wsChildFileName, wsSavePath.s);
 
-			if (false == ReceiveOneFile())
+			if (false == pThis->ReceiveOneFile())
 			{
 				DeleteFile(Recv::wsChildFileName);
 				return false;
@@ -615,8 +613,8 @@ DWORD Recv::ThreadProc(void)
 			for (int i = 0; i < nCount; i++)
 			{
 				ItemType type;
-				if (false == ReceiveDataShort(&type, sizeof(int))) return false;
-				if (false == ReceiveDataShort(&len, sizeof(WORD))) return false;
+				if (false == pThis->ReceiveDataShort(&type, sizeof(int))) return false;
+				if (false == pThis->ReceiveDataShort(&len, sizeof(WORD))) return false;
 
 				//szlen = the total length of the destination file/folder
 				int szlen = nSaveLen + len + 1;
@@ -627,10 +625,10 @@ DWORD Recv::ThreadProc(void)
 				*(Recv::wsChildFileName + nSaveLen) = '\\';
 				
 				//add to the chosen path (wsSavePath) the relative name of the file
-				if (false == ReceiveData(Recv::wsChildFileName + nSaveLen + 1, len * 2)) return false;
+				if (false == pThis->ReceiveData(Recv::wsChildFileName + nSaveLen + 1, len * 2)) return false;
 				if (type == ItemType::File)
 				{
-					if (false == ReceiveOneFile())
+					if (false == pThis->ReceiveOneFile())
 					{
 						if (PathFileExistsEx(Recv::wsChildFileName))
 							DeleteFile(Recv::wsChildFileName);
@@ -723,8 +721,10 @@ DWORD Recv::ThreadProc(void)
 
 #include "Send.h"
 
-DWORD Recv::ConnThreadProc()
+DWORD Recv::ConnThreadProc(void* p)
 {
+	Recv* pThis = (Recv*)p;
+
 	bOrderEnd = false;
 	int nError;
 
@@ -790,14 +790,14 @@ try_again2:
 	};
 
 final:
-	CloseHandle(Recv::hConnThread);
-	Recv::hConnThread = INVALID_HANDLE_VALUE;
+	pThis->m_connThread.Close();
 	Connected = Conn::ConnAsClient;
 
 	if (!bOrderEnd)
 	{
-		Recv::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Recv::ThreadProc, 0, 0, 0);
-		Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, 0, 0, 0);
+		pThis->m_thread.Start(Recv::ThreadProc, pThis);
+		//TODO: why was Send::hThread created here?
+		//Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, 0, 0, 0);
 
 		//after the connection is succesful:
 		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
@@ -1463,4 +1463,23 @@ BOOL Recv::ReceiveOneFile()
 		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
 	}
 	return true;
+}
+
+void Recv::StopThreads()
+{
+	if (m_connThread.IsRunning())
+	{
+		m_connThread.WaitAndStop();
+	}
+
+	//first the Recv::hThread
+	if (m_thread.IsRunning())
+	{
+		m_thread.WaitAsyncAndStop();
+	}
+}
+
+void Recv::StartConnThread()
+{
+	m_connThread.Start(Recv::ConnThreadProc, this);
 }
