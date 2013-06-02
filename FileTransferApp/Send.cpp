@@ -8,9 +8,6 @@
 
 #include <math.h>
 
-HANDLE Send::hThread = INVALID_HANDLE_VALUE;
-HANDLE Send::hConnThread = INVALID_HANDLE_VALUE;
-
 CSourceFile Send::File;
 DWORD Send::dwCurrentPartGlobal = 0;
 BOOL Send::bModeRepair = false;
@@ -538,13 +535,15 @@ BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
 	return true;
 }
 
-DWORD Send::ThreadProc(void)
+DWORD Send::ThreadProc(void* p)
 {
+	Send* pThis = (Send*)p;
+
 	//while it has not been ordered to end the program we continue to transfer data
 	while (bOrderEnd == FALSE && Connected != Conn::NotConnected)
 	{
 		//if it was not pressed the Send button, we do a handshake
-		if (false == WaitForDataSend()) return 0;
+		if (false == pThis->WaitForDataSend()) return 0;
 
 		//cleaning anything that was left:
 		if (Send::File.IsOpened()) Send::File.Close();
@@ -557,7 +556,7 @@ DWORD Send::ThreadProc(void)
 		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 0);
 		
 		//SENDING THE ITEM TYPE
-		if (false == SendDataSimple(&Send::itemType, sizeof(Send::itemType))) return 0;
+		if (false == pThis->SendDataSimple(&Send::itemType, sizeof(Send::itemType))) return 0;
 
 		//ONLY IF itemType == ItemType::Folder
 		if (Send::itemType == ItemType::Folder)
@@ -567,7 +566,7 @@ DWORD Send::ThreadProc(void)
 				Send::bModeRepair = TRUE;
 			else Send::bModeRepair = FALSE;
 
-			if (false == SendDataSimple(&Send::bModeRepair, sizeof(Send::bModeRepair))) return 0;
+			if (false == pThis->SendDataSimple(&Send::bModeRepair, sizeof(Send::bModeRepair))) return 0;
 		}
 
 		//SENDING THE FILENAME LENGTH
@@ -575,10 +574,10 @@ DWORD Send::ThreadProc(void)
 		DWORD len = StringLen(Send::wsParentFileDisplayName);
 		len++;
 
-		if (false == SendDataSimple(&len, sizeof(len))) return 0;
+		if (false == pThis->SendDataSimple(&len, sizeof(len))) return 0;
 		
 		//SENDING THE FILENAME STRING
-		if (false == SendDataSimple(Send::wsParentFileDisplayName, len * 2)) return 0;
+		if (false == pThis->SendDataSimple(Send::wsParentFileDisplayName, len * 2)) return 0;
 
 		int nCount = 0;
 		LARGE_INTEGER liSize = {0};
@@ -592,7 +591,7 @@ DWORD Send::ThreadProc(void)
 				MessageBox(0, L"And error has occured while trying to calculate the size of the specified file", 0, 0);
 				continue;
 			}
-			if (false == SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
+			if (false == pThis->SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
 		}
 		else
 		{
@@ -632,8 +631,8 @@ DWORD Send::ThreadProc(void)
 			nCount = Items.size();
 			
 			//WE NOW SEND THE nCount AND liSize DATA
-			if (false == SendDataSimple(&nCount, sizeof(nCount))) return 0;
-			if (false == SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
+			if (false == pThis->SendDataSimple(&nCount, sizeof(nCount))) return 0;
+			if (false == pThis->SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
 		}
 
 		SizeLItoString(liSize, Send::wsTotalSize);
@@ -648,8 +647,8 @@ DWORD Send::ThreadProc(void)
 
 		bool bConfirmed = 0;
 		//we wait until the other user decides whether to save the item or to refuse it.
-		if (false == WaitForDataReceive()) return 0;
-		if (false == ReceiveDataSimple(&bConfirmed, sizeof(bool))) {return 0;}
+		if (false == pThis->WaitForDataReceive()) return 0;
+		if (false == pThis->ReceiveDataSimple(&bConfirmed, sizeof(bool))) {return 0;}
 
 		if (bConfirmed == 0) 
 		{
@@ -675,7 +674,7 @@ DWORD Send::ThreadProc(void)
 		{
 			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Preparing to send the file...", 0);
 
-			if (false == SendOneFile(Send::wsParentFileName, liSize.QuadPart)) 
+			if (false == pThis->SendOneFile(Send::wsParentFileName, liSize.QuadPart)) 
 			{
 				return 0;
 			}
@@ -693,16 +692,16 @@ DWORD Send::ThreadProc(void)
 			for (I = Items.begin(); I != NULL; I = I->pNext)
 			{
 				//the type of the item: file or folder
-				if (false == SendDataShort(&I->m_Value.type, sizeof(int))) return 0;
+				if (false == pThis->SendDataShort(&I->m_Value.type, sizeof(int))) return 0;
 				//the length of the relative path
 				WORD len = (WORD)StringLen(I->m_Value.wsFullName + nPos) + 1;
-				if (false == SendDataShort(&len, sizeof(WORD))) return 0;
+				if (false == pThis->SendDataShort(&len, sizeof(WORD))) return 0;
 				//the relative path
-				if (false == SendData(I->m_Value.wsFullName + nPos, len * 2)) return 0;
+				if (false == pThis->SendData(I->m_Value.wsFullName + nPos, len * 2)) return 0;
 				//if it is a file, we send the file
 				if (I->m_Value.type == ItemType::File)
 				{
-					if (false == SendOneFile(I->m_Value.wsFullName, I->m_Value.size)) 
+					if (false == pThis->SendOneFile(I->m_Value.wsFullName, I->m_Value.size)) 
 					{
 						return 0;
 					}
@@ -758,8 +757,10 @@ DWORD Send::ThreadProc(void)
 
 #include "Recv.h"
 
-DWORD Send::ConnThreadProc(void)
+DWORD Send::ConnThreadProc(void* p)
 {
+	Send* pThis = (Send*)p;
+
 	bOrderEnd = false;
 	int nError;
 
@@ -818,15 +819,15 @@ DWORD Send::ConnThreadProc(void)
 	}
 
 final:
-	CloseHandle(Send::hConnThread);
-	Send::hConnThread = INVALID_HANDLE_VALUE;
+	pThis->m_connThread.Close();
 	Connected = Conn::ConnAsServer;
 	
 	if (!bOrderEnd)
 	{
 		//TODO: why was Recv::thread started here?
 		//Recv::thread.Start(Recv::ThreadProc/*, theApp->GetMainWindow()*/);
-		Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, theApp->GetMainWindow(), 0, 0);
+		pThis->m_thread.Start(Send::ThreadProc, pThis/*theApp->GetMainWindow()*/);
+		//Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, theApp->GetMainWindow(), 0, 0);
 
 		//after the connection is successful:
 		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
@@ -834,4 +835,23 @@ final:
 	}
 	
 	return 0;
+}
+
+void Send::StopThreads()
+{
+	if (m_connThread.IsRunning())
+	{
+		m_connThread.WaitAndStop();
+	}
+
+	//first the Recv::hThread
+	if (m_thread.IsRunning())
+	{
+		m_thread.WaitAsyncAndStop();
+	}
+}
+
+void Send::StartConnThread()
+{
+	m_connThread.Start(Recv::ConnThreadProc, this);
 }

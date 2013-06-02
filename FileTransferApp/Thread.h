@@ -9,7 +9,9 @@ public:
 	~Thread(void);
 
 	bool IsRunning() const;
+	//TODO: split
 	void WaitAndStop();
+	//TODO: split
 	void WaitAsyncAndStop();
 	void Start(DWORD (*threadFunc)(void*), void* param);
 	//void Start(DWORD (*threadFunc)());

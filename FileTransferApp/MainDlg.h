@@ -2,6 +2,7 @@
 #include "General.h"
 #include "resource.h"
 #include "Recv.h"
+#include "Send.h"
 
 #include "Dialog.h"
 
@@ -112,4 +113,5 @@ private:
 
 private:
 	Recv m_recv;
+	Send m_send;
 };

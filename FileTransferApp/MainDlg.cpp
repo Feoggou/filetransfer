@@ -458,35 +458,7 @@ void MainDlg::CloseAll()
 
 	//these 2 must have been closed allready
 	m_recv.StopThreads();
-
-	if (Send::ConnThreadProc != INVALID_HANDLE_VALUE)
-	{
-		//it closes itself after finishing
-		WaitForSingleObject(Send::hConnThread, INFINITE);
-
-#ifdef _DEBUG
-		//Send::hConnThread should now be closed and set to INVALID_HANDLE_VALUE
-		CloseHandle(Send::hConnThread);
-		Send::hConnThread = INVALID_HANDLE_VALUE;
-#endif
-	}
-
-	//we wait for them, and then close them.
-	//the sockets are already closed and bOrderEnd is set, so there should be no problem
-
-	
-
-	//now close the Send::hThread
-	if (Send::hThread != INVALID_HANDLE_VALUE)
-	{
-		while (WAIT_TIMEOUT == WaitForSingleObject(Send::hThread, 100))
-		{
-			SleepEx(50, TRUE);
-		}
-
-		CloseHandle(Send::hThread);
-		Send::hThread = INVALID_HANDLE_VALUE;
-	}
+	m_send.StopThreads();
 
 	//We have closed the threads, so it's safe to delete the socket pointers
 	if (Send::pSocket)
@@ -652,7 +624,7 @@ void MainDlg::CreateConnection()
 	SetWindowTextW(m_hComboNickIP, 0);
 
 	//creating connection
-	Send::hConnThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ConnThreadProc, 0, 0, 0);
+	m_send.StartConnThread();
 }
 
 void MainDlg::UpdateUIDisconnected()
