@@ -12,7 +12,7 @@
 #include "FilePicker.h"
 #include "FolderPicker.h"
 
-//#include <cmath>
+#include <algorithm>
 
 #include "SocketClient.h"
 
@@ -229,27 +229,30 @@ INT_PTR MainDlg::OnDialogProcedure(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void MainDlg::OnInitDialog()
+void MainDlg::AppendAboutSysMenuItem()
 {
-	//appending the "About" item in the system menu
-	{
-		HMENU hMenu = GetSystemMenu(m_hWnd, FALSE);
-		int nID = GetMenuItemCount(hMenu);
-		MENUITEMINFO mii = {0};
-		mii.cbSize = sizeof(mii);
-		mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-		mii.fType = MFT_STRING;
-		mii.wID = IDMI_ABOUT;
-		mii.dwTypeData = L"&About";
+	HMENU hMenu = GetSystemMenu(m_hWnd, FALSE);
+	int nID = GetMenuItemCount(hMenu);
+	MENUITEMINFO mii = {0};
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+	mii.fType = MFT_STRING;
+	mii.wID = IDMI_ABOUT;
+	mii.dwTypeData = L"&About";
 
-		InsertMenuItemW(hMenu, nID - 2, TRUE, &mii);
-	}
+	InsertMenuItemW(hMenu, nID - 2, TRUE, &mii);
+}
 
+void MainDlg::SetWindowIcon()
+{
 	//setting the icon
 	HICON hIcon = theApp->GetAppIcon();
 	SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 	SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+}
 
+void MainDlg::InitializeProgressBars()
+{
 	//initializing handles and controls: here the progress bars
 	m_hBarRecv = GetDlgItem(m_hWnd, IDC_PROG_RECV);
 	m_hBarSend = GetDlgItem(m_hWnd, IDC_PROG_SEND);
@@ -257,21 +260,38 @@ void MainDlg::OnInitDialog()
 	//set the range of the progress bars
 	SendMessageW(m_hBarRecv, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 	SendMessageW(m_hBarSend, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
+}
 
-	//initializing handles and controls
-	m_hCheckRepairMode = GetDlgItem(m_hWnd, IDC_CHK_REPAIRMODE);
+void MainDlg::InitializeLabels()
+{
 	m_hStatusText = GetDlgItem(m_hWnd, IDC_STATUS);
-	m_hButtonConnect = GetDlgItem(m_hWnd, IDC_BUTTON_CONNECT);
-	m_hButtonCreateConn = GetDlgItem(m_hWnd, IDC_BUTTON_CREATE_CONNECTION);
-	m_hComboNickIP = GetDlgItem(m_hWnd, IDC_COMBO_IP);
-	m_hButtonSend = GetDlgItem(m_hWnd, IDC_BUTTON_SEND);
-	m_hButtonBrowse = GetDlgItem(m_hWnd, IDC_BUTTON_BROWSE);
-	m_hEditItemPath = GetDlgItem(m_hWnd, IDC_EDIT_BROWSE);
-
 	m_hStatusSend = GetDlgItem(m_hWnd, IDC_ST_SEND);
 	m_hStatusRecv = GetDlgItem(m_hWnd, IDC_ST_RECV);
 	m_hStatusCurrFileSend = GetDlgItem(m_hWnd, IDC_ST_CURFILE_S);
 	m_hStatusCurrFileRecv = GetDlgItem(m_hWnd, IDC_ST_CURFILE_R);
+}
+
+void MainDlg::InitializeButtons()
+{
+	m_hButtonConnect = GetDlgItem(m_hWnd, IDC_BUTTON_CONNECT);
+	m_hButtonCreateConn = GetDlgItem(m_hWnd, IDC_BUTTON_CREATE_CONNECTION);
+	m_hButtonSend = GetDlgItem(m_hWnd, IDC_BUTTON_SEND);
+	m_hButtonBrowse = GetDlgItem(m_hWnd, IDC_BUTTON_BROWSE);
+}
+
+void MainDlg::OnInitDialog()
+{
+	AppendAboutSysMenuItem();
+	SetWindowIcon();
+
+	InitializeProgressBars();
+	InitializeLabels();
+	InitializeButtons();
+
+	//initializing handles and controls
+	m_hCheckRepairMode = GetDlgItem(m_hWnd, IDC_CHK_REPAIRMODE);
+	m_hComboNickIP = GetDlgItem(m_hWnd, IDC_COMBO_IP);
+	m_hEditItemPath = GetDlgItem(m_hWnd, IDC_EDIT_BROWSE);
 
 	std::wstring current_friend = theApp->GetCurrentFriend();
 	SetWindowTextW(m_hComboNickIP, current_friend.data());
@@ -507,9 +527,94 @@ void MainDlg::CloseAll()
 	UpdateUIDisconnected();
 }
 
-#define TYPE_INVALID	0
-#define TYPE_IP			1
-#define TYPE_NICKNAME	2
+void MainDlg::IsNicknameOrIp(const std::wstring& s, StringType& type) const
+{
+	//checking to see whether it is an IP or a nickname
+	//nick if it contains letters or ' '
+	//ip if it contains only digits and '.'
+	type = StringType_Invalid;//0 - invalid; 1 - ip; 2 - nick (alpha + ' ')
+
+	size_t len = s.length();
+	for (int i = 0; i < len - 1; i++)
+		if (s[i] != '.' && (!(s[i] >= '0' && s[i] <= '9')))
+		{
+			if (iswalpha(s[i]) || s[i] == ' ')
+				type = StringType_NickName;
+			else
+			{
+				type = StringType_Invalid;
+				break;
+			}
+		}
+		else type = StringType_Ip;
+
+	if (type == StringType_Ip)
+	{
+		//make sure the ip is in the format: nr.nr.nr.nr and each number is less than 256
+
+		if (s[0] == '.') {type = StringType_Invalid; return;}
+
+		//the first number
+		int nr = _wtoi(s.data());
+		if (nr > 255) {type = StringType_Invalid; return;}
+
+		BYTE byte0, byte1, byte2, byte3;
+		int count_successful = swscanf(s.data(), L"%d.%d.%d.%d", &byte0, &byte1, &byte2, &byte3);
+		//_ASSERTE(count_successful == 4);
+
+		if (count_successful != 4) {
+			type = StringType_Invalid;
+			return;
+		}
+
+		if (byte0 > 255 || byte1 > 255 || byte2 > 255 || byte3 > 255) {
+			type = StringType_Invalid;
+			return;
+		}
+	}
+}
+
+void MainDlg::ConnectToNickname(const std::wstring& name)
+{
+	//in this case, wstr is NICKNAME: it has been written a NICKNAME and pressed the "Connect" button.
+	//seek value into the registry
+
+	std::wstring ip = theApp->GetIpOfFriend(name);
+
+	theApp->SetLastFriend(name);
+
+	//we replace the old Server IP with this new IP (wsIP)
+	if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
+	CSocketClient::m_sServerIP = StringWtoA(ip.data());
+
+	//we connect to the server here:
+	ConnectToServer();
+}
+
+void MainDlg::ConnectToIp(const std::wstring& ip)
+{
+	//in this case, wstr is the IP: it has been written an IP and pressed the "Connect" button.
+	NickNameDlg nickDlg(m_hWnd);
+	if (IDOK == nickDlg.CreateModal())
+	{
+		//save the nick in the registry.
+		//wsText SHOULD NOT be deleted: it is destroyed automatically by the dialog.
+		const WCHAR* wsText = nickDlg.GetText();
+		ComboBox_AddString(m_hComboNickIP, wsText);
+
+		theApp->SaveFriend(wsText, ip);
+
+		//we set the nickname (instead of leaving the IP) in the combobox text:
+		SetWindowText(m_hComboNickIP, wsText);
+
+		//we replace the old Server IP with this one
+		if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
+		CSocketClient::m_sServerIP = StringWtoA(ip.data());
+
+		//the connection to the server is done here:
+		ConnectToServer();
+	}
+}
 
 //the "Connect" button was pressed
 void MainDlg::OnButtonConnect()
@@ -522,124 +627,18 @@ void MainDlg::OnButtonConnect()
 	WCHAR* wstr = new WCHAR[len];
 	GetWindowTextW(m_hComboNickIP, wstr, len);
 
-	//checking to see whether it is an IP or a nickname
-	//nick if it contains letters or ' '
-	//ip if it contains only digits and '.'
-	DWORD type = TYPE_INVALID;//0 - invalid; 1 - ip; 2 - nick (alpha + ' ')
-	for (int i = 0; i < len - 1; i++)
-		if (*(wstr + i) != '.' && (!(*(wstr + i) >= '0' && *(wstr + i) <= '9')))
-		{
-			if (iswalpha(*(wstr + i)) || *(wstr + i) == ' ')
-				type = TYPE_NICKNAME;
-			else
-			{
-				type = TYPE_INVALID;
-				break;
-			}
-		}
-		else type = TYPE_IP;
+	StringType type;
+	IsNicknameOrIp(wstr, type);
 
-	if (type == TYPE_IP)
-	{
-		//make sure the ip is in the format: nr.nr.nr.nr and each number is less than 256
-
-		if (*wstr == '.') {type = TYPE_INVALID; goto checkeach;}
-
-		//the first number
-		int nr = _wtoi(wstr);
-		if (nr > 255) {type = TYPE_INVALID; goto checkeach;}
-		
-		//the second number
-		WCHAR* wPos = StringCharW(wstr, '.');
-		if (!wPos) {type = TYPE_INVALID; goto checkeach;}
-		wPos++;
-		if (!*wPos) {type = TYPE_INVALID; goto checkeach;}
-		nr = _wtoi(wPos);
-		if (nr > 255) {type = TYPE_INVALID; goto checkeach;}
-
-		//the third number
-		wPos = StringCharW(wPos, '.');
-		if (!wPos) {type = TYPE_INVALID; goto checkeach;}
-		wPos++;
-		if (!*wPos) {type = TYPE_INVALID; goto checkeach;}
-		nr = _wtoi(wPos);
-		if (nr > 255) {type = TYPE_INVALID; goto checkeach;}
-
-		//the fourth number
-		wPos = StringCharW(wPos, '.');
-		if (!wPos) {type = TYPE_INVALID; goto checkeach;}
-		wPos++;
-		if (!*wPos) {type = TYPE_INVALID; goto checkeach;}
-		nr = _wtoi(wPos);
-		if (nr > 255) {type = TYPE_INVALID; goto checkeach;}
-
-		//there should be nothing here:
-		wPos = StringCharW(wPos, '.');
-		if (wPos) {type = TYPE_INVALID; goto checkeach;}
-	}
-
-checkeach:
-	switch (type)
-	{
-	case TYPE_INVALID: MessageBox(m_hWnd, L"This IP/Nickname is not valid. \n\nNicknames can contain only letters and spaces.\nIPs contain only numbers and dots (e.g. 81.20.100.142)",
+	if  (type == StringType_NickName) {
+		ConnectToNickname(wstr);
+	} else if (type == StringType_Ip) {
+		ConnectToIp(wstr);
+	} else {
+		MessageBox(m_hWnd, L"This IP/Nickname is not valid. \n\nNicknames can contain only letters and spaces.\nIPs contain only numbers and dots (e.g. 81.20.100.142)",
 				L"Invalid Value", MB_ICONWARNING);
 		delete[] wstr;
 		return;
-
-	case TYPE_IP:
-		{
-			//in this case, wstr is the IP: it has been written an IP and pressed the "Connect" button.
-			NickNameDlg nickDlg(m_hWnd);
-			if (IDOK == nickDlg.CreateModal())
-			{
-				//save the nick in the registry.
-				//wsText SHOULD NOT be deleted: it is destroyed automatically by the dialog.
-				const WCHAR* wsText = nickDlg.GetText();
-				ComboBox_AddString(m_hComboNickIP, wsText);
-				
-				theApp->SaveFriend(wsText, wstr);
-
-				//we set the nickname (instead of leaving the IP) in the combobox text:
-				SetWindowText(m_hComboNickIP, wsText);
-
-				//we replace the old Server IP with this one
-				if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
-				CSocketClient::m_sServerIP = StringWtoA(wstr);
-
-				//we no longer need wstr
-				delete[] wstr;
-
-				//the connection to the server is done here:
-				ConnectToServer();
-			}
-			else
-			{
-				delete[] wstr;
-				return;
-			}
-		}
-		break;
-
-	case TYPE_NICKNAME:
-		{
-			//in this case, wstr is NICKNAME: it has been written a NICKNAME and pressed the "Connect" button.
-			//seek value into the registry
-
-			std::wstring ip = theApp->GetIpOfFriend(wstr);
-
-			theApp->SetLastFriend(wstr);
-
-			//we no longer need the Nickname
-			delete[] wstr;
-
-			//we replace the old Server IP with this new IP (wsIP)
-			if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
-			CSocketClient::m_sServerIP = StringWtoA(ip.data());
-
-			//we connect to the server here:
-			ConnectToServer();
-		}
-		break;
 	}
 }
 

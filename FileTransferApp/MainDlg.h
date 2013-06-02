@@ -4,8 +4,12 @@
 
 #include "Dialog.h"
 
+#include <string>
+
 class MainDlg : public Dialog
 {
+	enum StringType {StringType_Invalid, StringType_NickName, StringType_Ip};
+
 	//PUBLIC DATA
 public:
 	//STATIC ITEMS
@@ -62,15 +66,27 @@ private:
 	//OTHER FUNCTIONS
 	//called by OnButtonConnect. it connects the application to the server (the other computers).
 	void ConnectToServer();
-	//removes the tray icon from the system tray
+	//called by OnClose and RestoreFromTray
 	void DestroyTrayIcon();
 	//closes the sockets, files, deletes buffers, etc.
 	void CloseAll();
 	//updates the UI after the connection has been closed
+	//called by CloseAll
 	void UpdateUIDisconnected();
 
+	void AppendAboutSysMenuItem();
+	void SetWindowIcon();
+	void InitializeProgressBars();
+	void InitializeLabels();
+	void InitializeButtons();
+	void ConnectToNickname(const std::wstring& name);
+	void ConnectToIp(const std::wstring& ip);
+
+	void IsNicknameOrIp(const std::wstring& s, StringType& type) const;
+
+	//called by OnBrowse
 	static void PickFile(HWND hDlg);
-	//displays a Vista-compatible dialogbox that allows the user to select a folder to send to the other computer
+	//called by OnBrowse
 	static void PickFolder(HWND hDlg);
 
 private:
@@ -90,5 +106,6 @@ private:
 
 	void OnTrayMessage(LPARAM lParam);
 	void OnMinimized();
+	//TODO: split in two, based on path = NULL or not
 	void OnShowMessageBox(LPCWSTR message, LPCWSTR path);
 };
