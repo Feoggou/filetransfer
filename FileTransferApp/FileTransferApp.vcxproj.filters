@@ -46,9 +46,6 @@
     <ClCompile Include="NickNameDlg.cpp">
       <Filter>Code\UI</Filter>
     </ClCompile>
-    <ClCompile Include="SamSocket.cpp">
-      <Filter>Code\Network</Filter>
-    </ClCompile>
     <ClCompile Include="SocketServer.cpp">
       <Filter>Code\Network</Filter>
     </ClCompile>
@@ -75,6 +72,9 @@
     </ClCompile>
     <ClCompile Include="FolderPicker.cpp">
       <Filter>Code\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>Code\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +104,6 @@
     </ClInclude>
     <ClInclude Include="NickNameDlg.h">
       <Filter>Code\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="SamSocket.h">
-      <Filter>Code\Network</Filter>
     </ClInclude>
     <ClInclude Include="SocketServer.h">
       <Filter>Code\Network</Filter>
@@ -146,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="FolderPicker.h">
       <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>Code\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

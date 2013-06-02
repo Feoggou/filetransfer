@@ -4,7 +4,7 @@
 
 #include "Application.h"
 
-CSocketServer::CSocketServer(void):CSamSocket()
+CSocketServer::CSocketServer(void):Socket()
 {
 }
 

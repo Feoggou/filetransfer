@@ -1,6 +1,6 @@
 #include "AboutDlg.h"
 #include "resource.h"
-#include "SamSocket.h"
+#include "Socket.h"
 #include <Ws2tcpip.h>
 
 #include "Application.h"

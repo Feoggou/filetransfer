@@ -29,7 +29,7 @@ namespace Send
 
 	//CONNECTION
 	//the send socket
-	extern CSamSocket* pSocket;
+	extern Socket* pSocket;
 
 	//the type of the item sent
 	extern ItemType itemType;

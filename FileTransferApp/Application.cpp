@@ -26,7 +26,7 @@ Application::Application(HINSTANCE hInst)
 	InitCommonControlsEx(&InitCtrls);
 
 	//initialize the sockets
-	int nError = CSamSocket::InitSockets();
+	int nError = Socket::InitSockets();
 	if (nError)
 	{
 		THROW(WindowsException, nError);
@@ -46,7 +46,7 @@ Application::~Application(void)
 	CloseHandle(m_hKey);
 
 	//uninitialize the sockets
-	int nError = CSamSocket::UninitSockets();
+	int nError = Socket::UninitSockets();
 	if (nError)
 	{
 		DisplayError(nError);

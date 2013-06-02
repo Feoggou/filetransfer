@@ -1,20 +1,20 @@
 #include "General.h"
-#include "SamSocket.h"
+#include "Socket.h"
 
 extern BOOL bOrderEnd;
 extern HWND hDlgStatus;
 
-CSamSocket::CSamSocket(void)
+Socket::Socket(void)
 {
 	m_bCreated = FALSE;
 	m_wPort = 0;
 }
 
-CSamSocket::~CSamSocket(void)
+Socket::~Socket(void)
 {
 }
 
-int CSamSocket::InitSockets(void)
+int Socket::InitSockets(void)
 {
 	WSADATA wsaData;
 	int Result = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -26,7 +26,7 @@ int CSamSocket::InitSockets(void)
 	return 0;
 }
 
-int CSamSocket::UninitSockets(void)
+int Socket::UninitSockets(void)
 {
 	if (WSACleanup() != 0)
 	{

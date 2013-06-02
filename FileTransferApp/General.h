@@ -40,7 +40,7 @@ inline BOOL DisplayError(DWORD dwError = 0)
 }
 
 #include "String.h"
-#include "SamSocket.h"
+#include "Socket.h"
 #include "DoubleList.h"
 #include "SamFile.h"
 #include "SourceFile.h"

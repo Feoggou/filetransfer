@@ -1,7 +1,7 @@
 #pragma once
 #include <winsock2.h>
 
-class CSamSocket abstract
+class Socket abstract
 {
 protected:
 	//specifies whether the socket is connected or not.
@@ -16,9 +16,9 @@ public:
 	SOCKET m_Server;
 
 	//the constructor
-	CSamSocket(void);
+	Socket(void);
 	//the destructor
-	virtual ~CSamSocket(void);
+	virtual ~Socket(void);
 	
 	//initializes the sockets: this allows the sockets to be created
 	static int InitSockets(void);

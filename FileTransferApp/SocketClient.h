@@ -3,9 +3,9 @@
 #ifndef SOCKETCLIENT_H
 #define SOCKETCLIENT_H
 
-#include "samsocket.h"
+#include "Socket.h"
 
-class CSocketClient : public CSamSocket
+class CSocketClient : public Socket
 {
 	//PRIVATE DATA
 public:

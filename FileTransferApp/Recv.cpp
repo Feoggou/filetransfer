@@ -34,7 +34,7 @@ BOOL Recv::bModeRepair = false;
 DWORD Recv::dwNrGreatParts = 0;
 WCHAR Recv::wsTotalSize[20];
 
-CSamSocket* Recv::pSocket = NULL;
+Socket* Recv::pSocket = NULL;
 
 ItemType Recv::itemType;
 WCHAR* Recv::wsParentDisplayName = NULL;

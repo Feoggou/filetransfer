@@ -6,7 +6,7 @@
 
 char* CSocketClient::m_sServerIP = NULL;
 
-CSocketClient::CSocketClient(void):CSamSocket()
+CSocketClient::CSocketClient(void):Socket()
 {
 }
 

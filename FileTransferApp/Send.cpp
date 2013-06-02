@@ -17,7 +17,7 @@ BOOL Send::bModeRepair = false;
 DWORD Send::dwNrGreatParts = 0;
 WCHAR Send::wsTotalSize[20];
 
-CSamSocket* Send::pSocket = NULL;
+Socket* Send::pSocket = NULL;
 ItemType Send::itemType;
 
 WCHAR* Send::wsParentFileName = NULL;

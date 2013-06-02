@@ -28,7 +28,7 @@ namespace Recv
 
 	//CONNECTION
 	//the receive socket
-	extern CSamSocket* pSocket;
+	extern Socket* pSocket;
 	
 	//the type of the item sent
 	extern ItemType itemType;
