@@ -4,6 +4,7 @@
 #include "String.h"
 #include "DoubleList.h"
 #include "SourceFile.h"
+#include "Debug.h"
 
 //TODO: split
 

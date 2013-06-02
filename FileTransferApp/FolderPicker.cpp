@@ -1,4 +1,5 @@
 #include "FolderPicker.h"
+#include "Debug.h"
 
 
 FolderPicker::FolderPicker(HWND hParent)

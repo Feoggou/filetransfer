@@ -1,5 +1,6 @@
 #include "Dialog.h"
 #include "Application.h"
+#include "Debug.h"
 
 #include "General.h"
 

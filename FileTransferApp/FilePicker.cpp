@@ -1,5 +1,6 @@
 #include "FilePicker.h"
 #include "Application.h"
+#include "Debug.h"
 
 
 FilePicker::FilePicker(HWND hParent)

@@ -82,6 +82,12 @@
     <ClCompile Include="Thread.cpp">
       <Filter>Code\Threading</Filter>
     </ClCompile>
+    <ClCompile Include="ConfirmReceive.cpp">
+      <Filter>Code\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfirmRepair.cpp">
+      <Filter>Code\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -155,6 +161,15 @@
     </ClInclude>
     <ClInclude Include="File.h">
       <Filter>Code\FS</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfirmReceive.h">
+      <Filter>Code\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Code\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfirmRepair.h">
+      <Filter>Code\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

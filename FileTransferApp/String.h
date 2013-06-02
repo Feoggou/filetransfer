@@ -1,3 +1,4 @@
+#pragma once
 #pragma warning (disable: 4995 4996)
 
 #define StringCopy wcscpy

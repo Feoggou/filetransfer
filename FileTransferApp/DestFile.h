@@ -6,6 +6,7 @@
 //#include <Windows.h>
 #include "File.h"
 #include "General.h"
+#include "Debug.h"
 
 class DestFile :
 	public File

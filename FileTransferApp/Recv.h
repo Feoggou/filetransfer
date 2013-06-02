@@ -68,26 +68,6 @@ public:
 	//receives a file that will be saved with filename (full file name) wsSavePath.
 	BOOL ReceiveOneFile();
 
-#if _WIN32_WINNT == _WIN32_WINNT_VISTA
-#define GetConfirmed		GetConfirmedVista
-#define GetConfirmedRepair	GetConfirmedRepairVista
-
-	//opens a Vista-compatible dialogbox to chose a destination where to save the file/folder
-	bool GetConfirmedVista(WCHAR** wsSavePath, LARGE_INTEGER& liSize);
-	//opens a Vista-compatible dialogbox to chose a folder to repair
-	bool GetConfirmedRepairVista(WCHAR** wsSavePath, LARGE_INTEGER& liSize);
-
-#else
-
-#define GetConfirmed		GetConfirmedXP
-#define GetConfirmedRepair	GetConfirmedRepairXP
-
-	//opens an XP-compatible dialogbox to chose a destination where to save the file/folder
-	bool GetConfirmedXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize);
-	//opens an XP-compatible dialogbox to chose a folder to repair
-	bool GetConfirmedRepairXP(WCHAR** wsSavePath, LARGE_INTEGER& liSize);
-#endif
-
 	//the thread for receiving data
 	static DWORD ThreadProc(void*);
 	//thread for connecting:

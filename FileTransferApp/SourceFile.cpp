@@ -1,5 +1,6 @@
 #include "SourceFile.h"
 #include "General.h"
+#include "Debug.h"
 
 SourceFile::SourceFile(void)
 {
