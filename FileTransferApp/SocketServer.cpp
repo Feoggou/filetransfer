@@ -4,17 +4,17 @@
 
 #include "Application.h"
 
-CSocketServer::CSocketServer(void):Socket()
+SocketServer::SocketServer(void):Socket()
 {
 }
 
 
-CSocketServer::~CSocketServer(void)
+SocketServer::~SocketServer(void)
 {
 	Close();
 }
 
-int CSocketServer::Create(WORD nPort)
+int SocketServer::Create(WORD nPort)
 {
 	m_wPort = nPort;
 
@@ -47,7 +47,7 @@ int CSocketServer::Create(WORD nPort)
 	return 0;
 }
 
-int CSocketServer::Listen()
+int SocketServer::Listen()
 {
 	if (SOCKET_ERROR == listen(m_Server, 1))
 	{
@@ -57,7 +57,7 @@ int CSocketServer::Listen()
 	return 0;
 }
 
-int CSocketServer::Accept(void)
+int SocketServer::Accept(void)
 {
 	SOCKADDR_IN ClientAddr;
 	int dSize = sizeof(SOCKADDR_IN);
@@ -84,7 +84,7 @@ int CSocketServer::Accept(void)
 	return 0;
 }
 
-int CSocketServer::Send(void* buffer, int len, int& dSentRec)
+int SocketServer::Send(void* buffer, int len, int& dSentRec)
 {
 	if (bOrderEnd) 
 	{
@@ -149,7 +149,7 @@ int CSocketServer::Send(void* buffer, int len, int& dSentRec)
 	return 0;
 }
 
-int CSocketServer::Receive(void* buffer, int len, int& dSentRec)
+int SocketServer::Receive(void* buffer, int len, int& dSentRec)
 {
 	if (bOrderEnd) 
 	{
@@ -230,7 +230,7 @@ int CSocketServer::Receive(void* buffer, int len, int& dSentRec)
 	return 0;
 }
 
-int CSocketServer::Close(void)
+int SocketServer::Close(void)
 {
 	if (!m_bCreated) return 0;
 
@@ -256,14 +256,14 @@ int CSocketServer::Close(void)
 #include "Send.h"
 #include "Recv.h"
 
-BOOL CSocketServer::Reconnect()
+BOOL SocketServer::Reconnect()
 {
 	if (bOrderEnd) return FALSE;
 
 	Connected = Conn::NotConnected;
 	
-	CSocketServer* pRecvServer = (CSocketServer*)Recv::pSocket;
-	CSocketServer* pSendServer = (CSocketServer*)Send::pSocket;
+	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
+	SocketServer* pSendServer = (SocketServer*)Send::pSocket;
 
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);

@@ -5,7 +5,7 @@
 
 #include "Socket.h"
 
-class CSocketServer : public Socket
+class SocketServer : public Socket
 {
 	//PRIVATE DATA
 private:
@@ -13,8 +13,8 @@ private:
 	SOCKET m_Connection;
 
 public:
-	CSocketServer(void);
-	~CSocketServer(void);
+	SocketServer(void);
+	~SocketServer(void);
 
 	//creates the connection in which this computer is the server
 	int Create(WORD nPort);

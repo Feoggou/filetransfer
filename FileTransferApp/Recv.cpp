@@ -728,10 +728,10 @@ DWORD Recv::ConnThreadProc()
 	bOrderEnd = false;
 	int nError;
 
-	Recv::pSocket = new CSocketClient();
-	Send::pSocket = new CSocketClient();
-	CSocketClient* pRecvClient = (CSocketClient*)Recv::pSocket;
-	CSocketClient* pSendClient = (CSocketClient*)Send::pSocket;
+	Recv::pSocket = new SocketClient();
+	Send::pSocket = new SocketClient();
+	SocketClient* pRecvClient = (SocketClient*)Recv::pSocket;
+	SocketClient* pSendClient = (SocketClient*)Send::pSocket;
 
 	nError = pRecvClient->Create();
 	if (nError)

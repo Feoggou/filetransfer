@@ -5,7 +5,7 @@
 
 #include "Socket.h"
 
-class CSocketClient : public Socket
+class SocketClient : public Socket
 {
 	//PRIVATE DATA
 public:
@@ -13,8 +13,8 @@ public:
 	static char* m_sServerIP;
 
 public:
-	CSocketClient(void);
-	~CSocketClient(void);
+	SocketClient(void);
+	~SocketClient(void);
 
 	//creates the connection in which this computer is the client
 	int Create(void);

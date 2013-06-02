@@ -763,10 +763,10 @@ DWORD Send::ConnThreadProc(void)
 	bOrderEnd = false;
 	int nError;
 
-	Send::pSocket = new CSocketServer();
-	Recv::pSocket = new CSocketServer();
-	CSocketServer* pRecvServer = (CSocketServer*)Recv::pSocket;
-	CSocketServer* pSendServer = (CSocketServer*)Send::pSocket;
+	Send::pSocket = new SocketServer();
+	Recv::pSocket = new SocketServer();
+	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
+	SocketServer* pSendServer = (SocketServer*)Send::pSocket;
 
 	nError = pRecvServer->Create(14147);
 	if (nError)

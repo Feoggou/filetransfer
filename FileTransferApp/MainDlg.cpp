@@ -584,8 +584,8 @@ void MainDlg::ConnectToNickname(const std::wstring& name)
 	theApp->SetLastFriend(name);
 
 	//we replace the old Server IP with this new IP (wsIP)
-	if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
-	CSocketClient::m_sServerIP = StringWtoA(ip.data());
+	if (SocketClient::m_sServerIP) delete[] SocketClient::m_sServerIP;
+	SocketClient::m_sServerIP = StringWtoA(ip.data());
 
 	//we connect to the server here:
 	ConnectToServer();
@@ -608,8 +608,8 @@ void MainDlg::ConnectToIp(const std::wstring& ip)
 		SetWindowText(m_hComboNickIP, wsText);
 
 		//we replace the old Server IP with this one
-		if (CSocketClient::m_sServerIP) delete[] CSocketClient::m_sServerIP;
-		CSocketClient::m_sServerIP = StringWtoA(ip.data());
+		if (SocketClient::m_sServerIP) delete[] SocketClient::m_sServerIP;
+		SocketClient::m_sServerIP = StringWtoA(ip.data());
 
 		//the connection to the server is done here:
 		ConnectToServer();

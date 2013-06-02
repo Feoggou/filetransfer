@@ -4,25 +4,25 @@
 
 #include "Application.h"
 
-char* CSocketClient::m_sServerIP = NULL;
+char* SocketClient::m_sServerIP = NULL;
 
-CSocketClient::CSocketClient(void):Socket()
+SocketClient::SocketClient(void):Socket()
 {
 }
 
 
-CSocketClient::~CSocketClient(void)
+SocketClient::~SocketClient(void)
 {
 	Close();
 
-	if (CSocketClient::m_sServerIP)
+	if (SocketClient::m_sServerIP)
 	{
-		delete[] CSocketClient::m_sServerIP;
-		CSocketClient::m_sServerIP = NULL;
+		delete[] SocketClient::m_sServerIP;
+		SocketClient::m_sServerIP = NULL;
 	}
 }
 
-int CSocketClient::Create(void)
+int SocketClient::Create(void)
 {
 	//client
 	m_Server = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -49,7 +49,7 @@ int CSocketClient::Create(void)
 	return 0;
 }
 
-int CSocketClient::Connect(WORD nPort)
+int SocketClient::Connect(WORD nPort)
 {
 	if (bOrderEnd) return 0;
 
@@ -83,7 +83,7 @@ int CSocketClient::Connect(WORD nPort)
 	return 0;
 }
 
-int CSocketClient::Send(void* buffer, int len, int& dSentRec)
+int SocketClient::Send(void* buffer, int len, int& dSentRec)
 {
 	if (bOrderEnd) 
 	{
@@ -148,7 +148,7 @@ int CSocketClient::Send(void* buffer, int len, int& dSentRec)
 	return 0;
 }
 
-int CSocketClient::Receive(void* buffer, int len, int& dSentRec)
+int SocketClient::Receive(void* buffer, int len, int& dSentRec)
 {
 	if (bOrderEnd) 
 	{
@@ -230,7 +230,7 @@ int CSocketClient::Receive(void* buffer, int len, int& dSentRec)
 	return 0;
 }
 
-int CSocketClient::Close(void)
+int SocketClient::Close(void)
 {
 	if (!m_bCreated) return 0;
 
@@ -250,15 +250,15 @@ int CSocketClient::Close(void)
 #include "Recv.h"
 #include "Send.h"
 
-BOOL CSocketClient::Reconnect()
+BOOL SocketClient::Reconnect()
 {
 	if (bOrderEnd) return FALSE;
 	int nError;
 
 	Connected = Conn::NotConnected;
 
-	CSocketClient* pRecvClient = (CSocketClient*)Recv::pSocket;
-	CSocketClient* pSendClient = (CSocketClient*)Send::pSocket;
+	SocketClient* pRecvClient = (SocketClient*)Recv::pSocket;
+	SocketClient* pSendClient = (SocketClient*)Send::pSocket;
 
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
