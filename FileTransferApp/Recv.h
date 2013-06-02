@@ -20,7 +20,7 @@ private:
 public:
 	//FILE AND DATA
 	//the file that is saved on the disk and written to:
-	static CDestFile File;
+	static DestFile File;
 	//how much has been transferred from the global data
 	static DWORD dwCurrentPartGlobal;
 	//specifies whether in this transfer will be sent only missing files in the destination directory (if true)

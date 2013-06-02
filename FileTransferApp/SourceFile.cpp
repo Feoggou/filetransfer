@@ -1,16 +1,16 @@
 #include "SourceFile.h"
 #include "General.h"
 
-CSourceFile::CSourceFile(void)
+SourceFile::SourceFile(void)
 {
 }
 
 
-CSourceFile::~CSourceFile(void)
+SourceFile::~SourceFile(void)
 {
 }
 
-BOOL CSourceFile::Open(LPCTSTR wsPath, LONGLONG* pllSize)
+BOOL SourceFile::Open(LPCTSTR wsPath, LONGLONG* pllSize)
 {
 	_ASSERTE(m_hFile == INVALID_HANDLE_VALUE);
 	m_hFile = CreateFileW(wsPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN /*| FILE_FLAG_NO_BUFFERING*/, 0);
@@ -38,7 +38,7 @@ BOOL CSourceFile::Open(LPCTSTR wsPath, LONGLONG* pllSize)
 	return TRUE;
 }
 
-BOOL CSourceFile::ReadBlock(DWORD& dwSize)
+BOOL SourceFile::ReadBlock(DWORD& dwSize)
 {
 	//m_pCurrentPos must be greater than m_DataBlock (that is, to point inside m_DataBlock)
 	//if it doesn't, it means that we have finished 'reading' this large block.

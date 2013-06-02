@@ -7,12 +7,12 @@
 #include "File.h"
 #include "General.h"
 
-class CDestFile :
+class DestFile :
 	public File
 {
 public:
-	CDestFile(void) {};
-	~CDestFile(void) {};
+	DestFile(void) {};
+	~DestFile(void) {};
 
 	//creates a new file to be written to
 	BOOL Create(LPCTSTR wsPath, LARGE_INTEGER& liExptectedSize);

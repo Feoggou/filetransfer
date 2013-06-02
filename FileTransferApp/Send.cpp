@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-CSourceFile Send::File;
+SourceFile Send::File;
 DWORD Send::dwCurrentPartGlobal = 0;
 BOOL Send::bModeRepair = false;
 DWORD Send::dwNrGreatParts = 0;

@@ -1,7 +1,7 @@
 #include "DestFile.h"
 #include "General.h"
 
-BOOL CDestFile::Create(LPCTSTR wsPath, LARGE_INTEGER& liExpectedSize)
+BOOL DestFile::Create(LPCTSTR wsPath, LARGE_INTEGER& liExpectedSize)
 {
 	//create the file
 	_ASSERTE(m_hFile == INVALID_HANDLE_VALUE);
@@ -50,7 +50,7 @@ BOOL CDestFile::Create(LPCTSTR wsPath, LARGE_INTEGER& liExpectedSize)
 	return TRUE;
 }
 
-BOOL CDestFile::WriteBlock(DWORD dwSize)
+BOOL DestFile::WriteBlock(DWORD dwSize)
 {
 	//write to buffer (if we did not reach the buffer's end)
 	//or write to disk if we have reached the end of the buffer.

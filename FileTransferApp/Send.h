@@ -20,7 +20,7 @@ private:
 public:
 	//FILE AND DATA
 	//the file that is read from and transferred to the other computer:
-	static CSourceFile File;
+	static SourceFile File;
 	//how much has been transferred from the global data
 	static DWORD dwCurrentPartGlobal;
 	//the type of the item sent

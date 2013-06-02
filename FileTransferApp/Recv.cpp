@@ -27,7 +27,7 @@ the folder you have on your disk. Do you want to receive it? If yes, you will re
 #define IDS_FOLDER_COULD_NOT_BE_CREATED L"Folder \"%s\" could not be created."
 #define IDS_FINISHED_TRANSFERRING L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!"
 
-CDestFile Recv::File;
+DestFile Recv::File;
 DWORD Recv::dwCurrentPartGlobal = 0;
 BOOL Recv::bModeRepair = false;
 DWORD Recv::dwNrGreatParts = 0;

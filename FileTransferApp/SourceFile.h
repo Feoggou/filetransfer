@@ -8,15 +8,15 @@
 
 #include "General.h"
 
-class CSourceFile :
+class SourceFile :
 	public File
 {
 private:
 	BYTE*	m_pNextPos;
 
 public:
-	CSourceFile(void);
-	~CSourceFile(void);
+	SourceFile(void);
+	~SourceFile(void);
 
 	//opens an exiting file for reading
 	BOOL Open(LPCTSTR wsPath, LONGLONG* pllSize = NULL);

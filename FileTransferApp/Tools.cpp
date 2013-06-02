@@ -182,7 +182,7 @@ void SearchFolder(IShellFolder* pSearchFolder, CDoubleList<FILE_ITEM> &Items, LA
 
 BOOL CalcFileSize(const WCHAR* wsPath, LARGE_INTEGER& liSize)
 {
-	CSourceFile File;
+	SourceFile File;
 	if (FALSE == File.Open(wsPath)) return false;
 
 	liSize.QuadPart = File.GetSize();
