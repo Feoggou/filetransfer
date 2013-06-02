@@ -35,380 +35,14 @@ BOOL Recv::bModeRepair = false;
 DWORD Recv::dwNrGreatParts = 0;
 WCHAR Recv::wsTotalSize[20];
 
-Socket* Recv::pSocket = NULL;
-
 ItemType Recv::itemType;
 WCHAR* Recv::wsParentDisplayName = NULL;
 WCHAR* Recv::wsChildFileName = NULL;
 
-
-inline BOOL Recv::SendData(void* Buffer, int dSize)
+Recv::Recv()
+	: m_dataTransferer(),
+	m_pSocket(NULL)
 {
-	_ASSERTE(Buffer);
-	int dSentRec;
-	CRC crc;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//calculate the checksum
-		crc = CRCCalc((BYTE*)Buffer, dSize);
-
-		//send the checksum
-		pSocket->Send(&crc, sizeof(crc), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//send data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receive validation
-		pSocket->Receive(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Recv::ReceiveData(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	CRC crc1, crc2;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//receive the checksum
-		pSocket->Receive(&crc1, sizeof(crc1), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-	
-		//receive data
-		pSocket->Receive(Buffer, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//calculate the checksum
-		crc2 = CRCCalc((BYTE*)Buffer, dSize);
-
-		if (crc1 == crc2)
-		{
-			dwIsOK = 1;
-			pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		}
-		else
-		{
-			dwIsOK = 0;
-			pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		}
-
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Recv::SendDataSimple(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-
-	//send data
-try_again:
-	pSocket->Send(Buffer, dSize, dSentRec);
-	if (dSentRec == -1)
-	{
-		if (bOrderEnd) return false;
-		goto try_again;
-	}
-
-	return true;
-}
-
-inline BOOL Recv::ReceiveDataSimple(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	
-try_again:
-	//receive data
-	pSocket->Receive(Buffer, dSize, dSentRec);
-	if (dSentRec <= 0)
-	{
-		if (bOrderEnd) return false;
-		if (0 == dSentRec)
-		{
-			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-			PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-			return false;
-		}
-
-		else if (dSentRec == -1)
-		{
-			goto try_again;
-		}
-	}
-
-	return true;
-}
-
-inline BOOL Recv::SendDataShort(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//send data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receive data
-		BYTE* buf2 = new BYTE[dSize];
-		pSocket->Receive(buf2, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			delete[] buf2;
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//comparing data1 with data2
-		if (0 == memcmp(Buffer, buf2, dSize))
-		{
-			dwIsOK = 1;
-		}
-		else dwIsOK = 0;
-
-		delete[] buf2;
-
-		//sending validation
-		pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Recv::ReceiveDataShort(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//receive data
-		pSocket->Receive(Buffer, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//sending data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receiving validation
-		pSocket->Receive(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Recv::WaitForDataReceive()
-{
-	int dSentRec;
-	BYTE dIsReady = 0;
-
-	do
-	{
-		if (bOrderEnd) return false;
-		Sleep(500);
-
-		//receiving the news: whether a file will follow or not
-		pSocket->Receive(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//sending the acknowledgement: we have read the message.
-		//this value is not used by the other computer.
-		pSocket->Send(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-	}while (!dIsReady);
-
-	return true;
-}
-
-BYTE dIsReady = 0;
-//the Handshake thread
-inline BOOL Recv::HandShake()
-{
-	int dSentRec;
-	BYTE aux;
-
-	do
-	{
-		if (bOrderEnd) return false;
-		Sleep(500);
-
-		//sending the news: ready or not ready to send the file
-		pSocket->Send(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receiving confirmation: this data does not matter what it is
-		pSocket->Receive(&aux, sizeof(aux), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	}while (!dIsReady);
-
-	return true;
 }
 
 DWORD Recv::ThreadProc(void* p)
@@ -427,26 +61,26 @@ DWORD Recv::ThreadProc(void* p)
 		Recv::dwNrGreatParts = 0;
 
 		//here we wait until a file will be transferred!
-		if (false == pThis->WaitForDataReceive()) return 0;
+		if (false == pThis->m_dataTransferer.WaitForDataReceive()) return 0;
 
 		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, 0, 0);
 
 		//RETRIEVING THE ITEM TYPE
-		if (false == pThis->ReceiveDataSimple(&Recv::itemType, sizeof(Recv::itemType))) return false;
+		if (false == pThis->m_dataTransferer.ReceiveDataSimple(&Recv::itemType, sizeof(Recv::itemType))) return false;
 
 		if (Recv::itemType == ItemType::Folder)
 		{
 			//RECEIVE THE MODE: NORMAL/REPAIR
-			if (false == pThis->ReceiveDataSimple(&Recv::bModeRepair, sizeof(Recv::bModeRepair))) return 0;
+			if (false == pThis->m_dataTransferer.ReceiveDataSimple(&Recv::bModeRepair, sizeof(Recv::bModeRepair))) return 0;
 		}
 		
 		//RETRIEVING THE FILENAME LENGTH
 		DWORD len = 0;
-		if (false == pThis->ReceiveDataSimple(&len, sizeof(len))) return false;
+		if (false == pThis->m_dataTransferer.ReceiveDataSimple(&len, sizeof(len))) return false;
 
 		//RETRIEVING THE FILENAME STRING
 		Recv::wsParentDisplayName = new WCHAR[len];
-		if (false == pThis->ReceiveDataSimple(Recv::wsParentDisplayName, len * 2)) return false;
+		if (false == pThis->m_dataTransferer.ReceiveDataSimple(Recv::wsParentDisplayName, len * 2)) return false;
 
 		//RECEIVEING THE Size of the file/files and optionally, the number of items.
 		int nCount = 0;
@@ -454,20 +88,21 @@ DWORD Recv::ThreadProc(void* p)
 		if (Recv::itemType == ItemType::File)
 		{
 			//receiving only the size
-			if (false == pThis->ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
+			if (false == pThis->m_dataTransferer.ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
 		}
 		else
 		{
 			//receiving, first the nCount and then the liSize
-			if (false == pThis->ReceiveDataSimple(&nCount, sizeof(nCount))) return false;
+			if (false == pThis->m_dataTransferer.ReceiveDataSimple(&nCount, sizeof(nCount))) return false;
 
-			if (false == pThis->ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
+			if (false == pThis->m_dataTransferer.ReceiveDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return false;
 		}
 
 		//we create the handshake thread: we send and receive handshake while the user decides
 		//to save the item(s) and where or to refuse it.
-		dIsReady = 0;
-		HANDLE hHandshake = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)HandShake, 0, 0, 0);
+		//dIsReady = 0;
+		Thread handshake_thread;
+		handshake_thread.Start(DataTransferer::HandShake, (void*)pThis->m_pSocket);
 		
 		//format the size to display to the user.
 		SizeLItoString(liSize, Recv::wsTotalSize);
@@ -525,12 +160,11 @@ DWORD Recv::ThreadProc(void* p)
 		{
 			delete[] wsMessage;
 
-			dIsReady = 1;
-			WaitForSingleObject(hHandshake, INFINITE);
-			CloseHandle(hHandshake);
+			//dIsReady = 1;
+			handshake_thread.WaitAndClose();
 
 			bConfirmed = false;
-			if (false == pThis->SendDataSimple(&bConfirmed, sizeof(bool))) return false;
+			if (false == pThis->m_dataTransferer.SendDataSimple(&bConfirmed, sizeof(bool))) return false;
 			continue;
 		}
 		delete[] wsMessage;
@@ -553,15 +187,14 @@ DWORD Recv::ThreadProc(void* p)
 		CoUninitialize();
 
 		//end the handshake thread
-		dIsReady = 1;
-		WaitForSingleObject(hHandshake, INFINITE);
-		DWORD dwExitCode = 1;
-		GetExitCodeThread(hHandshake, &dwExitCode);
-		CloseHandle(hHandshake);
+		//dIsReady = 1;
+		handshake_thread.Wait();
+		DWORD exit_code = handshake_thread.GetExitCode();
+		handshake_thread.Close();
 
-		if (0 == dwExitCode) return false;
+		if (0 == exit_code) return false;
 
-		if (false == pThis->SendDataSimple(&bConfirmed, sizeof(bool))) return false;
+		if (false == pThis->m_dataTransferer.SendDataSimple(&bConfirmed, sizeof(bool))) return false;
 		//perhaps the user has canceled receiving the item(s) here.
 		if (!bConfirmed) continue;
 
@@ -616,8 +249,8 @@ DWORD Recv::ThreadProc(void* p)
 			for (int i = 0; i < nCount; i++)
 			{
 				ItemType type;
-				if (false == pThis->ReceiveDataShort(&type, sizeof(int))) return false;
-				if (false == pThis->ReceiveDataShort(&len, sizeof(WORD))) return false;
+				if (false == pThis->m_dataTransferer.ReceiveDataShort(&type, sizeof(int))) return false;
+				if (false == pThis->m_dataTransferer.ReceiveDataShort(&len, sizeof(WORD))) return false;
 
 				//szlen = the total length of the destination file/folder
 				int szlen = nSaveLen + len + 1;
@@ -628,7 +261,7 @@ DWORD Recv::ThreadProc(void* p)
 				*(Recv::wsChildFileName + nSaveLen) = '\\';
 				
 				//add to the chosen path (wsSavePath) the relative name of the file
-				if (false == pThis->ReceiveData(Recv::wsChildFileName + nSaveLen + 1, len * 2)) return false;
+				if (false == pThis->m_dataTransferer.ReceiveData(Recv::wsChildFileName + nSaveLen + 1, len * 2)) return false;
 				if (type == ItemType::File)
 				{
 					if (false == pThis->ReceiveOneFile())
@@ -731,10 +364,12 @@ DWORD Recv::ConnThreadProc(void* p)
 	bOrderEnd = false;
 	int nError;
 
-	Recv::pSocket = new SocketClient();
-	Send::pSocket = new SocketClient();
-	SocketClient* pRecvClient = (SocketClient*)Recv::pSocket;
-	SocketClient* pSendClient = (SocketClient*)Send::pSocket;
+	pThis->m_pSocket = new SocketClient();
+	//Send::pSocket = new SocketClient();
+	SocketClient* pRecvClient = (SocketClient*)pThis->m_pSocket;
+	//SocketClient* pSendClient = (SocketClient*)Send::pSocket;
+
+	pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
 
 	nError = pRecvClient->Create();
 	if (nError)
@@ -744,34 +379,34 @@ DWORD Recv::ConnThreadProc(void* p)
 		goto final;
 	}
 
-	nError = pSendClient->Create();
+	/*nError = pSendClient->Create();
 	if (nError)
 	{
 		DisplayError(nError);
 		bOrderEnd = 1;
 		goto final;
-	}
+	}*/
 
 	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connecting to the server...");
 
 	//Connect
 try_again:
-	nError = pSendClient->Connect(14147);//89.40.112.172
-	if (nError && !bOrderEnd)
-	{
-		if (nError == WSAECONNREFUSED) {Sleep(200); goto try_again;}
-		if (nError != WSAETIMEDOUT)
-		{
-			DisplayError(nError);
-			bOrderEnd = 1;
-			goto final;
-		}
-		else
-		{
-			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
-				goto try_again;
-		}
-	}; 
+	//nError = pSendClient->Connect(14147);//89.40.112.172
+	//if (nError && !bOrderEnd)
+	//{
+	//	if (nError == WSAECONNREFUSED) {Sleep(200); goto try_again;}
+	//	if (nError != WSAETIMEDOUT)
+	//	{
+	//		DisplayError(nError);
+	//		bOrderEnd = 1;
+	//		goto final;
+	//	}
+	//	else
+	//	{
+	//		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
+	//			goto try_again;
+	//	}
+	//}; 
 
 try_again2:
 	nError = pRecvClient->Connect(14148);
@@ -817,7 +452,7 @@ BOOL Recv::ReceiveOneFile()
 	LARGE_INTEGER liSize;
 
 	//we first receive the size of the file and calculate its parts
-	ReceiveDataShort(&liSize.QuadPart, sizeof(LONGLONG));
+	m_dataTransferer.ReceiveDataShort(&liSize.QuadPart, sizeof(LONGLONG));
 	nrParts = (DWORD)liSize.QuadPart / BLOCKSIZE;
 	if (liSize.QuadPart % BLOCKSIZE) nrParts++;
 
@@ -828,7 +463,7 @@ BOOL Recv::ReceiveOneFile()
 		//we need to check whether this file is ok or not:
 		if (PathFileExistsW(Recv::wsChildFileName)) bExists = true;
 
-		if (false == SendDataShort(&bExists, sizeof(bool))) return false;
+		if (false == m_dataTransferer.SendDataShort(&bExists, sizeof(bool))) return false;
 		//if the file is ok, we skip it:
 		if (true == bExists) 
 		{
@@ -873,7 +508,7 @@ BOOL Recv::ReceiveOneFile()
 		if (bOrderEnd) return false;
 
 		//RECEIVING DATA
-		if (false == ReceiveData(Recv::File.m_pCurrentPos, BLOCKSIZE)) return false;
+		if (false == m_dataTransferer.ReceiveData(Recv::File.m_pCurrentPos, BLOCKSIZE)) return false;
 		
 		//write the data into the file
 		if (false == Recv::File.WriteBlock(BLOCKSIZE))
@@ -927,7 +562,7 @@ BOOL Recv::ReceiveOneFile()
 	//now, receive the last piece. we do not know how large it is, so we have to read its size first.
 	//RECEIVING THE SIZE OF THE LAST PIECE
 	DWORD len;
-	if (false == ReceiveDataShort(&len, sizeof(DWORD))) return false;
+	if (false == m_dataTransferer.ReceiveDataShort(&len, sizeof(DWORD))) return false;
 
 	if (len > BLOCKSIZE)
 	{
@@ -939,7 +574,7 @@ BOOL Recv::ReceiveOneFile()
 	}
 
 	//NOW WE RECEIVE THE LAST PIECE
-	if (false == ReceiveData(Recv::File.m_pCurrentPos, len)) return false;
+	if (false == m_dataTransferer.ReceiveData(Recv::File.m_pCurrentPos, len)) return false;
 	
 	//we write the last piece to the file
 	if (false == File.WriteBlock(len)) return false;
@@ -972,17 +607,39 @@ void Recv::StopThreads()
 {
 	if (m_connThread.IsRunning())
 	{
-		m_connThread.WaitAndStop();
+		m_connThread.WaitAndClose();
 	}
 
 	//first the Recv::hThread
 	if (m_thread.IsRunning())
 	{
-		m_thread.WaitAsyncAndStop();
+		m_thread.WaitAsyncAndClose();
 	}
 }
 
 void Recv::StartConnThread()
 {
 	m_connThread.Start(Recv::ConnThreadProc, this);
+}
+
+void Recv::CloseSocket()
+{
+	if (m_pSocket)
+	{
+		int nError = m_pSocket->Close();
+		if (nError)
+		{
+			DisplayError(nError);
+
+			delete m_pSocket;
+			m_pSocket = NULL;
+			PostQuitMessage(-1);
+		}
+
+		else
+		{
+			delete m_pSocket;
+			m_pSocket = nullptr;
+		}
+	}
 }

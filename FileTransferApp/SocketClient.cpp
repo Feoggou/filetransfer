@@ -257,8 +257,8 @@ BOOL SocketClient::Reconnect()
 
 	Connected = Conn::NotConnected;
 
-	SocketClient* pRecvClient = (SocketClient*)Recv::pSocket;
-	SocketClient* pSendClient = (SocketClient*)Send::pSocket;
+	SocketClient* pRecvClient = (SocketClient*)theApp->GetReceiveSocket();
+	SocketClient* pSendClient = (SocketClient*)theApp->GetSendSocket();
 
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);

@@ -262,8 +262,8 @@ BOOL SocketServer::Reconnect()
 
 	Connected = Conn::NotConnected;
 	
-	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
-	SocketServer* pSendServer = (SocketServer*)Send::pSocket;
+	SocketServer* pRecvServer = (SocketServer*)theApp->GetReceiveSocket();
+	SocketServer* pSendServer = (SocketServer*)theApp->GetSendSocket();
 
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);

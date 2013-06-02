@@ -53,6 +53,10 @@ public:
 
 	~MainDlg(void) {}
 
+	//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
+	Socket* GetReceiveSocket();
+	Socket* GetSendSocket();
+
 	//PRIVATE FUNCTIONS
 private:
 	static INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

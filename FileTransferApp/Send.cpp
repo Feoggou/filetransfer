@@ -14,386 +14,15 @@ DWORD Send::dwCurrentPartGlobal = 0;
 BOOL Send::bModeRepair = false;
 DWORD Send::dwNrGreatParts = 0;
 WCHAR Send::wsTotalSize[20];
-
-Socket* Send::pSocket = NULL;
 ItemType Send::itemType;
 
 WCHAR* Send::wsParentFileName = NULL;
 WCHAR* Send::wsParentFileDisplayName = NULL;
 WCHAR* Send::wsChildFileName = NULL;
 
-inline BOOL Send::SendData(void* Buffer, int dSize)
+Send::Send()
+	: m_pSocket(nullptr)
 {
-	_ASSERTE(Buffer);
-	int dSentRec;
-	CRC crc;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//calculate the checksum
-		crc = CRCCalc((BYTE*)Buffer, dSize);
-
-		//send the checksum
-		pSocket->Send(&crc, sizeof(crc), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//send data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receive validation
-		pSocket->Receive(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Send::ReceiveData(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	CRC crc1, crc2;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//receive the checksum
-		pSocket->Receive(&crc1, sizeof(crc1), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-	
-		//receive data
-		pSocket->Receive(Buffer, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//calculate the checksum
-		crc2 = CRCCalc((BYTE*)Buffer, dSize);
-
-		if (crc1 == crc2)
-		{
-			dwIsOK = 1;
-			pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-			if (dSentRec == -1)
-			{
-				if (bOrderEnd) return false;
-				continue;
-			}
-		}
-		else
-		{
-			dwIsOK = 0;
-			pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-			if (dSentRec == -1)
-			{
-				if (bOrderEnd) return false;
-				continue;
-			}
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Send::SendDataSimple(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-
-	//send data
-try_again:
-	pSocket->Send(Buffer, dSize, dSentRec);
-	if (dSentRec == -1)
-	{
-		if (bOrderEnd) return false;
-		goto try_again;
-	}
-
-	return true;
-}
-
-inline BOOL Send::ReceiveDataSimple(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	
-	//receive data
-try_again:
-	pSocket->Receive(Buffer, dSize, dSentRec);
-	if (dSentRec <= 0)
-	{
-		if (bOrderEnd) return false;
-		if (0 == dSentRec)
-		{
-			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-			PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-			return false;
-		}
-
-		else if (dSentRec == -1)
-		{
-			goto try_again;
-		}
-	}
-
-	return true;
-}
-
-inline BOOL Send::SendDataShort(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//send data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receive data
-		BYTE* buf2 = new BYTE[dSize];
-		pSocket->Receive(buf2, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			delete[] buf2;
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//comparing data1 with data2
-		if (0 == memcmp(Buffer, buf2, dSize))
-		{
-			dwIsOK = 1;
-		}
-		else dwIsOK = 0;
-
-		delete[] buf2;
-
-		//sending validation
-		pSocket->Send(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-	}
-
-	//if validation failed try again!
-	while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Send::ReceiveDataShort(void* Buffer, int dSize)
-{
-	_ASSERTE(Buffer);
-	int dSentRec;
-	DWORD dwIsOK = 0;
-
-	do
-	{
-		//receive data
-		pSocket->Receive(Buffer, dSize, dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//sending data
-		pSocket->Send(Buffer, dSize, dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receiving validation
-		pSocket->Receive(&dwIsOK, sizeof(dwIsOK), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	//if validation failed try again!
-	} while (dwIsOK != 1);
-
-	return true;
-}
-
-inline BOOL Send::WaitForDataSend()
-{
-	int dSentRec;
-	BYTE aux;
-	BYTE dIsReady = 0;
-
-	do
-	{
-		if (bOrderEnd) return false;
-		Sleep(500);
-		dIsReady = dwDataTransfer & DATATRANSF_SEND;
-
-		//sending the news: ready or not ready to send the file
-		pSocket->Send(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-		//receiving confirmation: this data does not matter what it is
-		pSocket->Receive(&aux, sizeof(aux), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-	}while (!dIsReady);
-
-	return true;
-}
-
-inline BOOL Send::WaitForDataReceive()
-{
-	int dSentRec;
-	BYTE dIsReady = 0;
-
-	do
-	{
-		if (bOrderEnd) return false;
-		Sleep(500);
-
-		//receiving the news: whether a file will follow or not
-		pSocket->Receive(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec <= 0)
-		{
-			if (bOrderEnd) return false;
-			if (0 == dSentRec)
-			{
-				SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The other computer has closed the connection!");
-				PostMessage(theApp->GetMainWindow(), WM_CLOSECONNECTION, 0, 0);
-				return false;
-			}
-
-			else if (dSentRec == -1)
-			{
-				continue;
-			}
-		}
-
-		//sending the acknowledgement: we have read the message.
-		//this value is not used by the other computer.
-		pSocket->Send(&dIsReady, sizeof(dIsReady), dSentRec);
-		if (dSentRec == -1)
-		{
-			if (bOrderEnd) return false;
-			continue;
-		}
-
-	}while (!dIsReady);
-
-	return true;
 }
 
 BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
@@ -404,7 +33,7 @@ BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
 	Send::wsChildFileName = wsReadFile;
 	DWORD nrParts = 0;
 	{
-		SendDataShort(&llSize, sizeof(LONGLONG));
+		m_dataTransferer.SendDataShort(&llSize, sizeof(LONGLONG));
 		nrParts = (DWORD)llSize / BLOCKSIZE;
 		if (llSize % BLOCKSIZE) nrParts++;
 	}
@@ -413,7 +42,7 @@ BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
 	{
 		//we need confirmation: whether this file is ok or not
 		BYTE exists;
-		if (false == ReceiveDataShort(&exists, sizeof(BYTE))) return false;
+		if (false == m_dataTransferer.ReceiveDataShort(&exists, sizeof(BYTE))) return false;
 		//if the file is ok, we skip it:
 		if (1 == exists) 
 		{
@@ -458,7 +87,7 @@ BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
 		if (false == Send::File.ReadBlock(dwRead)) return false;
 
 		//SENDING DATA
-		if (false == SendData(Send::File.m_pCurrentPos, dwRead)) return false;
+		if (false == m_dataTransferer.SendData(Send::File.m_pCurrentPos, dwRead)) return false;
 
 		dwCurrentPartGlobal++;
 
@@ -508,10 +137,10 @@ BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
 	if (false == File.ReadBlock(dwRead)) return false;
 
 	//NOW WE TRANSFER THE SIZE OF THE LAST PIECE
-	if (false == SendDataShort(&dwRead, sizeof(DWORD))) return false;
+	if (false == m_dataTransferer.SendDataShort(&dwRead, sizeof(DWORD))) return false;
 
 	//NOW WE TRANSFER THE LAST PIECE
-	if (false == SendData(Send::File.m_pCurrentPos, dwRead)) return false;
+	if (false == m_dataTransferer.SendData(Send::File.m_pCurrentPos, dwRead)) return false;
 
 	Send::File.Close();
 
@@ -544,7 +173,7 @@ DWORD Send::ThreadProc(void* p)
 	while (bOrderEnd == FALSE && Connected != Conn::NotConnected)
 	{
 		//if it was not pressed the Send button, we do a handshake
-		if (false == pThis->WaitForDataSend()) return 0;
+		if (false == pThis->m_dataTransferer.WaitForDataSend()) return 0;
 
 		//cleaning anything that was left:
 		if (Send::File.IsOpened()) Send::File.Close();
@@ -557,7 +186,7 @@ DWORD Send::ThreadProc(void* p)
 		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 0);
 		
 		//SENDING THE ITEM TYPE
-		if (false == pThis->SendDataSimple(&Send::itemType, sizeof(Send::itemType))) return 0;
+		if (false == pThis->m_dataTransferer.SendDataSimple(&Send::itemType, sizeof(Send::itemType))) return 0;
 
 		//ONLY IF itemType == ItemType::Folder
 		if (Send::itemType == ItemType::Folder)
@@ -567,7 +196,7 @@ DWORD Send::ThreadProc(void* p)
 				Send::bModeRepair = TRUE;
 			else Send::bModeRepair = FALSE;
 
-			if (false == pThis->SendDataSimple(&Send::bModeRepair, sizeof(Send::bModeRepair))) return 0;
+			if (false == pThis->m_dataTransferer.SendDataSimple(&Send::bModeRepair, sizeof(Send::bModeRepair))) return 0;
 		}
 
 		//SENDING THE FILENAME LENGTH
@@ -575,10 +204,10 @@ DWORD Send::ThreadProc(void* p)
 		DWORD len = StringLen(Send::wsParentFileDisplayName);
 		len++;
 
-		if (false == pThis->SendDataSimple(&len, sizeof(len))) return 0;
+		if (false == pThis->m_dataTransferer.SendDataSimple(&len, sizeof(len))) return 0;
 		
 		//SENDING THE FILENAME STRING
-		if (false == pThis->SendDataSimple(Send::wsParentFileDisplayName, len * 2)) return 0;
+		if (false == pThis->m_dataTransferer.SendDataSimple(Send::wsParentFileDisplayName, len * 2)) return 0;
 
 		int nCount = 0;
 		LARGE_INTEGER liSize = {0};
@@ -592,7 +221,7 @@ DWORD Send::ThreadProc(void* p)
 				MessageBox(0, L"And error has occured while trying to calculate the size of the specified file", 0, 0);
 				continue;
 			}
-			if (false == pThis->SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
+			if (false == pThis->m_dataTransferer.SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
 		}
 		else
 		{
@@ -632,8 +261,8 @@ DWORD Send::ThreadProc(void* p)
 			nCount = Items.size();
 			
 			//WE NOW SEND THE nCount AND liSize DATA
-			if (false == pThis->SendDataSimple(&nCount, sizeof(nCount))) return 0;
-			if (false == pThis->SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
+			if (false == pThis->m_dataTransferer.SendDataSimple(&nCount, sizeof(nCount))) return 0;
+			if (false == pThis->m_dataTransferer.SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
 		}
 
 		SizeLItoString(liSize, Send::wsTotalSize);
@@ -648,8 +277,8 @@ DWORD Send::ThreadProc(void* p)
 
 		bool bConfirmed = 0;
 		//we wait until the other user decides whether to save the item or to refuse it.
-		if (false == pThis->WaitForDataReceive()) return 0;
-		if (false == pThis->ReceiveDataSimple(&bConfirmed, sizeof(bool))) {return 0;}
+		if (false == pThis->m_dataTransferer.WaitForDataReceive()) return 0;
+		if (false == pThis->m_dataTransferer.ReceiveDataSimple(&bConfirmed, sizeof(bool))) {return 0;}
 
 		if (bConfirmed == 0) 
 		{
@@ -693,12 +322,12 @@ DWORD Send::ThreadProc(void* p)
 			for (I = Items.begin(); I != NULL; I = I->pNext)
 			{
 				//the type of the item: file or folder
-				if (false == pThis->SendDataShort(&I->m_Value.type, sizeof(int))) return 0;
+				if (false == pThis->m_dataTransferer.SendDataShort(&I->m_Value.type, sizeof(int))) return 0;
 				//the length of the relative path
 				WORD len = (WORD)StringLen(I->m_Value.wsFullName + nPos) + 1;
-				if (false == pThis->SendDataShort(&len, sizeof(WORD))) return 0;
+				if (false == pThis->m_dataTransferer.SendDataShort(&len, sizeof(WORD))) return 0;
 				//the relative path
-				if (false == pThis->SendData(I->m_Value.wsFullName + nPos, len * 2)) return 0;
+				if (false == pThis->m_dataTransferer.SendData(I->m_Value.wsFullName + nPos, len * 2)) return 0;
 				//if it is a file, we send the file
 				if (I->m_Value.type == ItemType::File)
 				{
@@ -765,17 +394,18 @@ DWORD Send::ConnThreadProc(void* p)
 	bOrderEnd = false;
 	int nError;
 
-	Send::pSocket = new SocketServer();
-	Recv::pSocket = new SocketServer();
-	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
-	SocketServer* pSendServer = (SocketServer*)Send::pSocket;
+	pThis->m_pSocket = new SocketServer();
+//	Recv::pSocket = new SocketServer();
+//	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
+	SocketServer* pSendServer = (SocketServer*)pThis->m_pSocket;
+	pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
 
-	nError = pRecvServer->Create(14147);
+	/*nError = pRecvServer->Create(14147);
 	if (nError)
 	{
 		DisplayError(nError);
 		goto final;
-	}
+	}*/
 
 	nError = pSendServer->Create(14148);
 	if (nError)
@@ -784,13 +414,13 @@ DWORD Send::ConnThreadProc(void* p)
 		goto final;
 	}
 
-	//Listen
-	nError = pRecvServer->Listen();
-	if (nError)
-	{
-		DisplayError(nError);
-		goto final;
-	}
+	////Listen
+	//nError = pRecvServer->Listen();
+	//if (nError)
+	//{
+	//	DisplayError(nError);
+	//	goto final;
+	//}
 
 	nError = pSendServer->Listen();
 	if (nError)
@@ -802,7 +432,7 @@ DWORD Send::ConnThreadProc(void* p)
 	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The Server is turned on and waiting for the client to connect.");
 
 	//Accept
-	if (!bOrderEnd)
+	/*if (!bOrderEnd)
 	{
 		nError = pRecvServer->Accept();
 		if (nError && !bOrderEnd)
@@ -810,7 +440,7 @@ DWORD Send::ConnThreadProc(void* p)
 			DisplayError(nError);
 			goto final;
 		}
-	}
+	}*/
 
 	nError = pSendServer->Accept();
 	if (nError && !bOrderEnd)
@@ -842,17 +472,40 @@ void Send::StopThreads()
 {
 	if (m_connThread.IsRunning())
 	{
-		m_connThread.WaitAndStop();
+		m_connThread.WaitAndClose();
 	}
 
 	//first the Recv::hThread
 	if (m_thread.IsRunning())
 	{
-		m_thread.WaitAsyncAndStop();
+		m_thread.WaitAsyncAndClose();
 	}
 }
 
 void Send::StartConnThread()
 {
 	m_connThread.Start(Recv::ConnThreadProc, this);
+}
+
+
+void Send::CloseSocket()
+{
+	if (m_pSocket)
+	{
+		int nError = m_pSocket->Close();
+		if (nError)
+		{
+			DisplayError(nError);
+
+			delete m_pSocket;
+			m_pSocket = NULL;
+			PostQuitMessage(-1);
+		}
+
+		else
+		{
+			delete m_pSocket;
+			m_pSocket = nullptr;
+		}
+	}
 }

@@ -7,6 +7,7 @@
 #include "Thread.h"
 #include "SourceFile.h"
 #include "Socket.h"
+#include "DataTransferer.h"
 
 class Send
 {
@@ -18,6 +19,9 @@ private:
 	Thread m_connThread;
 
 public:
+	Send();
+	Socket* GetSocket() {return /*m_pSocket*/nullptr;}
+
 	//FILE AND DATA
 	//the file that is read from and transferred to the other computer:
 	static SourceFile File;
@@ -33,8 +37,6 @@ public:
 	static WCHAR wsTotalSize[20];
 
 	//CONNECTION
-	//the send socket
-	static Socket* pSocket;
 
 	//the type of the item sent
 	static ItemType itemType;
@@ -49,25 +51,6 @@ public:
 	static WCHAR* wsChildFileName;
 
 	//FUNCTIONS
-	//sends the Buffer data, with error checking.
-	inline BOOL SendData(void* Buffer, int dSize);
-	//receives the Buffer data, with error checking.
-	inline BOOL ReceiveData(void* Buffer, int dSize);
-
-	//sends the Buffer data, without error checking.
-	inline BOOL SendDataSimple(void* Buffer, int dSize);
-	//receives the Buffer data, without error checking.
-	inline BOOL ReceiveDataSimple(void* Buffer, int dSize);
-
-	//sends the Buffer data, error checking = memcmp
-	inline BOOL SendDataShort(void* Buffer, int dSize);
-	//receives the Buffer data, error checking = memcmp
-	inline BOOL ReceiveDataShort(void* Buffer, int dSize);
-
-	//sends 0 if it is not ready yet to send the file or sends TRUE if a file will follow.
-	inline BOOL WaitForDataSend();
-	inline BOOL WaitForDataReceive();
-
 	//function for sending one file
 	BOOL SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize);
 
@@ -78,6 +61,12 @@ public:
 
 	void StopThreads();
 	void StartConnThread();
+
+	void CloseSocket();
+
+private:
+	Socket*				m_pSocket;
+	DataTransferer		m_dataTransferer;
 };
 
 #endif//SEND_H

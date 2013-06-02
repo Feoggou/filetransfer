@@ -429,50 +429,12 @@ void MainDlg::CloseAll()
 	int nError;
 	//if the socket was not already closed, we close it.
 	//we delete the pointer after the threads have closed only.
-	if (Send::pSocket)
-	{
-		nError = Send::pSocket->Close();
-		if (nError)
-		{
-			DisplayError(nError);
-
-			delete Send::pSocket;
-			Send::pSocket = NULL;
-			PostQuitMessage(-1);
-		}
-	}
-
-	//if the socket was not already closed, we close it.
-	//we delete the pointer after the threads have closed only.
-	if (Recv::pSocket)
-	{
-		nError = Recv::pSocket->Close();
-		if (nError)
-		{
-			DisplayError(nError);
-
-			delete Recv::pSocket;
-			Recv::pSocket = NULL;
-			PostQuitMessage(-1);
-		}
-	}
+	m_send.CloseSocket();
+	m_recv.CloseSocket();
 
 	//these 2 must have been closed allready
 	m_recv.StopThreads();
 	m_send.StopThreads();
-
-	//We have closed the threads, so it's safe to delete the socket pointers
-	if (Send::pSocket)
-	{
-		delete Send::pSocket;
-		Send::pSocket = NULL;
-	}
-
-	if (Recv::pSocket)
-	{
-		delete Recv::pSocket;
-		Recv::pSocket = NULL;
-	}
 
 	//update the UI: it is possible that we do not close the program now.
 	UpdateUIDisconnected();
@@ -662,4 +624,15 @@ void MainDlg::UpdateUIDisconnected()
 
 	//status changed to "Not Connected"
 	Connected = Conn::NotConnected;
+}
+
+//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
+Socket* MainDlg::GetReceiveSocket()
+{
+	return m_recv.GetSocket();
+}
+
+Socket* MainDlg::GetSendSocket()
+{
+	return m_send.GetSocket();
 }

@@ -6,6 +6,7 @@
 #include <vector>
 
 class MainDlg;
+class Socket;
 
 class Application
 {
@@ -24,6 +25,10 @@ public:
 	const std::wstring&& GetIpOfFriend(const std::wstring& friend_name);
 	void SetLastFriend(const std::wstring& last_friend_name);
 	const std::wstring&& GetLastFriend() const;
+
+	//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
+	Socket* GetReceiveSocket();
+	Socket* GetSendSocket();
 
 public:
 	static HINSTANCE GetHInstance() {_ASSERT(s_pInst); return s_hInst;}

@@ -87,6 +87,7 @@
     <ClCompile Include="ConfirmReceive.cpp" />
     <ClCompile Include="ConfirmRepair.cpp" />
     <ClCompile Include="CRC.cpp" />
+    <ClCompile Include="DataTransferer.cpp" />
     <ClCompile Include="DestFile.cpp" />
     <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="FilePicker.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="ConfirmReceive.h" />
     <ClInclude Include="ConfirmRepair.h" />
     <ClInclude Include="CRC.h" />
+    <ClInclude Include="DataTransferer.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DestFile.h" />
     <ClInclude Include="Dialog.h" />

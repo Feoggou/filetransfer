@@ -10,12 +10,15 @@ public:
 
 	bool IsRunning() const;
 	//TODO: split
-	void WaitAndStop();
+	void WaitAndClose();
 	//TODO: split
-	void WaitAsyncAndStop();
+	void WaitAsyncAndClose();
 	void Start(DWORD (*threadFunc)(void*), void* param);
-	//void Start(DWORD (*threadFunc)());
+	void Start(DWORD (*threadFunc)());
+	void Wait(int msecs = INFINITE);
 	void Close();
+
+	DWORD GetExitCode();
 
 private:
 	HANDLE		m_hThread;

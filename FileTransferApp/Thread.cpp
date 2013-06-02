@@ -10,6 +10,7 @@ Thread::Thread(void)
 
 Thread::~Thread(void)
 {
+	Close();
 }
 
 bool Thread::IsRunning() const
@@ -17,10 +18,9 @@ bool Thread::IsRunning() const
 	return m_hThread != INVALID_HANDLE_VALUE;
 }
 
-void Thread::WaitAndStop()
+void Thread::WaitAndClose()
 {
-	//it closes itself after finishing
-	WaitForSingleObject(m_hThread, INFINITE);
+	Wait(-1);
 
 #ifdef _DEBUG
 	//Recv::hConnThread should now be closed and set to INVALID_HANDLE_VALUE
@@ -30,7 +30,7 @@ void Thread::WaitAndStop()
 #endif
 }
 
-void Thread::WaitAsyncAndStop()
+void Thread::WaitAsyncAndClose()
 {
 	while (WAIT_TIMEOUT == WaitForSingleObject(m_hThread, 100))
 	{
@@ -45,13 +45,28 @@ void Thread::Start(DWORD (*threadFunc)(void*), void* param)
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, param, 0, 0);
 }
 
-//void Thread::Start(DWORD (*threadFunc)())
-//{
-//	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, 0, 0, 0);
-//}
+void Thread::Start(DWORD (*threadFunc)())
+{
+	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, 0, 0, 0);
+}
 
 void Thread::Close()
 {
-	CloseHandle(m_hThread);
-	m_hThread = INVALID_HANDLE_VALUE;
+	if (m_hThread != INVALID_HANDLE_VALUE) {
+		CloseHandle(m_hThread);
+		m_hThread = INVALID_HANDLE_VALUE;
+	}
+}
+
+void Thread::Wait(int msecs)
+{
+	WaitForSingleObject(m_hThread, INFINITE);
+}
+
+DWORD Thread::GetExitCode()
+{
+	DWORD dwExitCode = 1;
+	GetExitCodeThread(m_hThread, &dwExitCode);
+
+	return dwExitCode;
 }
