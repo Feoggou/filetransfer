@@ -4,6 +4,7 @@
 #include <Ws2tcpip.h>
 
 #include "Application.h"
+#include "String.h"
 
 void AboutDlg::OnInitDialog()
 {

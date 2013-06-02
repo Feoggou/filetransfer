@@ -4,6 +4,8 @@
 #include "CRC.h"
 #include "General.h"
 #include "Tools.h"
+#include "String.h"
+#include "DoubleList.h"
 
 #include "Application.h"
 

@@ -114,9 +114,6 @@
     <ClInclude Include="DestFile.h">
       <Filter>Code\FS</Filter>
     </ClInclude>
-    <ClInclude Include="SamFile.h">
-      <Filter>Code\FS</Filter>
-    </ClInclude>
     <ClInclude Include="SourceFile.h">
       <Filter>Code\FS</Filter>
     </ClInclude>
@@ -155,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="Thread.h">
       <Filter>Code\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="File.h">
+      <Filter>Code\FS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,9 @@
 #include "Tools.h"
 
 #include <cmath>
+#include "String.h"
+#include "DoubleList.h"
+#include "SourceFile.h"
 
 //TODO: split
 

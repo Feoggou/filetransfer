@@ -4,11 +4,11 @@
 #define DESTFILE_H
 
 //#include <Windows.h>
-//#include "samfile.h"
+#include "File.h"
 #include "General.h"
 
 class CDestFile :
-	public CSamFile
+	public File
 {
 public:
 	CDestFile(void) {};
@@ -31,7 +31,7 @@ public:
 			}
 		}
 
-		((CSamFile*)this)->Close();
+		((File*)this)->Close();
 	}
 
 	//writes into a file

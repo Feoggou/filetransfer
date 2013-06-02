@@ -5,6 +5,8 @@
 
 #include "General.h"
 #include "Thread.h"
+#include "SourceFile.h"
+#include "Socket.h"
 
 class Send
 {

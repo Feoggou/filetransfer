@@ -5,6 +5,8 @@
 
 #include "General.h"
 #include "Thread.h"
+#include "DestFile.h"
+#include "Socket.h"
 
 class Recv
 {

@@ -3,6 +3,7 @@
 #include "SocketServer.h"
 #include "CRC.h"
 #include "Tools.h"
+#include "String.h"
 
 #include "Application.h"
 

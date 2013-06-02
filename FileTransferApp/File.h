@@ -1,12 +1,9 @@
 #pragma once
 
-#ifndef SAMFILE_H
-#define SAMFILE_H
-
 //#include <windows.h>
 #include "General.h"
 
-class CSamFile abstract
+class File
 {
 protected:
 	//the handle of the file
@@ -23,7 +20,7 @@ public:
 	BYTE*		m_pCurrentPos;
 
 public:
-	CSamFile(void)
+	File(void)
 	{
 		m_hFile = INVALID_HANDLE_VALUE;
 		m_Size = m_dwDataSize = 0;
@@ -31,7 +28,7 @@ public:
 		m_pCurrentPos = NULL;
 	}
 
-	~CSamFile(void)
+	virtual ~File(void)
 	{
 		if (m_hFile != INVALID_HANDLE_VALUE)
 			CloseHandle(m_hFile);
@@ -75,5 +72,3 @@ public:
 		return liSize.QuadPart;
 	}
 };
-
-#endif//SAMFILE_H

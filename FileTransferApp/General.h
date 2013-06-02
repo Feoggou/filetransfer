@@ -39,12 +39,12 @@ inline BOOL DisplayError(DWORD dwError = 0)
 	return FALSE;
 }
 
-#include "String.h"
-#include "Socket.h"
-#include "DoubleList.h"
-#include "SamFile.h"
-#include "SourceFile.h"
-#include "DestFile.h"
+//#include "String.h"
+//#include "Socket.h"
+//#include "DoubleList.h"
+//#include "File.h"
+//#include "SourceFile.h"
+//#include "DestFile.h"
 
 #define QWORD UINT64
 

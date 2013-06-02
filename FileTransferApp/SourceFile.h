@@ -4,12 +4,12 @@
 #define SOURCEFILE_H
 
 //#include <Windows.h>
-//#include "samfile.h"
+#include "File.h"
 
 #include "General.h"
 
 class CSourceFile :
-	public CSamFile
+	public File
 {
 private:
 	BYTE*	m_pNextPos;

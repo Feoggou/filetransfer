@@ -11,6 +11,7 @@
 #include "NickNameDlg.h"
 #include "FilePicker.h"
 #include "FolderPicker.h"
+#include "String.h"
 
 #include <algorithm>
 
