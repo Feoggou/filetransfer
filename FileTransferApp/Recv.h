@@ -1,27 +1,16 @@
 #pragma once
 
-#ifndef RECV_H
-#define RECV_H
-
 #include "General.h"
 #include "Thread.h"
 #include "DestFile.h"
 #include "Socket.h"
 #include "DataTransferer.h"
+#include "Worker.h"
 
-class Recv
+class Recv : public Worker
 {
-private:
-	//THREADS
-	//handle of the receive thread
-	Thread m_thread;
-	//handle of the connecting thread:
-	Thread m_connThread;
-
 public:
 	Recv();
-
-	Socket* GetSocket() {return m_pSocket;}
 
 	//FILE AND DATA
 	//the file that is saved on the disk and written to:
@@ -53,17 +42,4 @@ public:
 
 	//the thread for receiving data
 	static DWORD ThreadProc(void*);
-	//thread for connecting:
-	static DWORD ConnThreadProc(void*);
-
-	void StopThreads();
-	void StartConnThread();
-
-	void CloseSocket();
-
-private:
-	DataTransferer		m_dataTransferer;
-	Socket*				m_pSocket;
 };
-
-#endif//RECV_H

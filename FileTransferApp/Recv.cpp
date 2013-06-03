@@ -40,8 +40,6 @@ WCHAR* Recv::wsParentDisplayName = NULL;
 WCHAR* Recv::wsChildFileName = NULL;
 
 Recv::Recv()
-	: m_dataTransferer(),
-	m_pSocket(NULL)
 {
 }
 
@@ -355,97 +353,6 @@ DWORD Recv::ThreadProc(void* p)
 	return 0;
 }
 
-#include "Send.h"
-
-DWORD Recv::ConnThreadProc(void* p)
-{
-	Recv* pThis = (Recv*)p;
-
-	bOrderEnd = false;
-	int nError;
-
-	pThis->m_pSocket = new SocketClient();
-	//Send::pSocket = new SocketClient();
-	SocketClient* pRecvClient = (SocketClient*)pThis->m_pSocket;
-	//SocketClient* pSendClient = (SocketClient*)Send::pSocket;
-
-	pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
-
-	nError = pRecvClient->Create();
-	if (nError)
-	{
-		DisplayError(nError);
-		bOrderEnd = 1;
-		goto final;
-	}
-
-	/*nError = pSendClient->Create();
-	if (nError)
-	{
-		DisplayError(nError);
-		bOrderEnd = 1;
-		goto final;
-	}*/
-
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connecting to the server...");
-
-	//Connect
-try_again:
-	//nError = pSendClient->Connect(14147);//89.40.112.172
-	//if (nError && !bOrderEnd)
-	//{
-	//	if (nError == WSAECONNREFUSED) {Sleep(200); goto try_again;}
-	//	if (nError != WSAETIMEDOUT)
-	//	{
-	//		DisplayError(nError);
-	//		bOrderEnd = 1;
-	//		goto final;
-	//	}
-	//	else
-	//	{
-	//		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
-	//			goto try_again;
-	//	}
-	//}; 
-
-try_again2:
-	nError = pRecvClient->Connect(14148);
-	if (nError && !bOrderEnd)
-	{
-		if (nError == WSAECONNREFUSED) {Sleep(200); goto try_again2;}
-		if (nError != WSAETIMEDOUT)
-		{
-			DisplayError(nError);
-			bOrderEnd = 1;
-			goto final;
-		}
-		else
-		{
-			SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection time-out. Trying again...");
-				goto try_again2;
-		}
-
-	};
-
-final:
-	pThis->m_connThread.Close();
-	Connected = Conn::ConnAsClient;
-
-	if (!bOrderEnd)
-	{
-		pThis->m_thread.Start(Recv::ThreadProc, pThis);
-		//TODO: why was Send::hThread created here?
-		//Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, 0, 0, 0);
-
-		//after the connection is succesful:
-		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
-		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
-	}
-	else PostMessage(theApp->GetMainWindow(), WM_CLOSE, 0, 0);
-
-	return 0;
-}
-
 BOOL Recv::ReceiveOneFile()
 {
 	DWORD nrParts = 0;
@@ -601,45 +508,4 @@ BOOL Recv::ReceiveOneFile()
 		PostMessage(MainDlg::m_hBarRecv, PBM_SETPOS, oldpos, 0);
 	}
 	return true;
-}
-
-void Recv::StopThreads()
-{
-	if (m_connThread.IsRunning())
-	{
-		m_connThread.WaitAndClose();
-	}
-
-	//first the Recv::hThread
-	if (m_thread.IsRunning())
-	{
-		m_thread.WaitAsyncAndClose();
-	}
-}
-
-void Recv::StartConnThread()
-{
-	m_connThread.Start(Recv::ConnThreadProc, this);
-}
-
-void Recv::CloseSocket()
-{
-	if (m_pSocket)
-	{
-		int nError = m_pSocket->Close();
-		if (nError)
-		{
-			DisplayError(nError);
-
-			delete m_pSocket;
-			m_pSocket = NULL;
-			PostQuitMessage(-1);
-		}
-
-		else
-		{
-			delete m_pSocket;
-			m_pSocket = nullptr;
-		}
-	}
 }

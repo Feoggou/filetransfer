@@ -484,7 +484,7 @@ void Send::StopThreads()
 
 void Send::StartConnThread()
 {
-	m_connThread.Start(Recv::ConnThreadProc, this);
+	m_connThread.Start(Send::ConnThreadProc, this);
 }
 
 

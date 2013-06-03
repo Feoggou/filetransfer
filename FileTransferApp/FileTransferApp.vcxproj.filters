@@ -26,6 +26,9 @@
     <Filter Include="Code\Threading">
       <UniqueIdentifier>{ee6f150a-9e97-424c-9970-927c9abf99b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Code\Transfer">
+      <UniqueIdentifier>{b26c0c32-8c90-43e5-8d35-e4f8d193c61f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRC.cpp">
@@ -73,12 +76,6 @@
     <ClCompile Include="Socket.cpp">
       <Filter>Code\Network</Filter>
     </ClCompile>
-    <ClCompile Include="Recv.cpp">
-      <Filter>Code\Threading</Filter>
-    </ClCompile>
-    <ClCompile Include="Send.cpp">
-      <Filter>Code\Threading</Filter>
-    </ClCompile>
     <ClCompile Include="Thread.cpp">
       <Filter>Code\Threading</Filter>
     </ClCompile>
@@ -90,6 +87,21 @@
     </ClCompile>
     <ClCompile Include="DataTransferer.cpp">
       <Filter>Code\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="FileTransferer.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="TransferProgress.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="Worker.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="Recv.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="Send.cpp">
+      <Filter>Code\Transfer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -153,12 +165,6 @@
     <ClInclude Include="Socket.h">
       <Filter>Code\Network</Filter>
     </ClInclude>
-    <ClInclude Include="Recv.h">
-      <Filter>Code\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="Send.h">
-      <Filter>Code\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="Thread.h">
       <Filter>Code\Threading</Filter>
     </ClInclude>
@@ -176,6 +182,21 @@
     </ClInclude>
     <ClInclude Include="DataTransferer.h">
       <Filter>Code\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="FileTransferer.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="TransferProgress.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="Worker.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="Recv.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="Send.h">
+      <Filter>Code\Transfer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
