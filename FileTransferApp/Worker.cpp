@@ -7,7 +7,7 @@
 
 Worker::Worker(void)
 	: m_dataTransferer(),
-	m_pSocket(NULL)
+	m_pSocket(nullptr)
 {
 }
 

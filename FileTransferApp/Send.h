@@ -8,19 +8,12 @@
 #include "SourceFile.h"
 #include "Socket.h"
 #include "DataTransferer.h"
+#include "Worker.h"
 
-class Send
+class Send : public Worker
 {
-private:
-	//THREADS
-	//handle of the Send thread
-	Thread m_thread;
-	//handle of the connecting thread:
-	Thread m_connThread;
-
 public:
 	Send();
-	Socket* GetSocket() {return /*m_pSocket*/nullptr;}
 
 	//FILE AND DATA
 	//the file that is read from and transferred to the other computer:
@@ -56,17 +49,6 @@ public:
 
 	//the thread for sending data
 	static DWORD ThreadProc(void*);
-	//thread for connecting:
-	static DWORD ConnThreadProc(void*);
-
-	void StopThreads();
-	void StartConnThread();
-
-	void CloseSocket();
-
-private:
-	Socket*				m_pSocket;
-	DataTransferer		m_dataTransferer;
 };
 
 #endif//SEND_H
