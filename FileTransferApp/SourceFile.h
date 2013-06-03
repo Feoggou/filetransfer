@@ -22,7 +22,7 @@ public:
 	BOOL Open(LPCTSTR wsPath, LONGLONG* pllSize = NULL);
 
 	//reads from a file
-	BOOL ReadBlock(DWORD& dwSize);
+	BOOL ReadBlock(DWORD& dwSize) override;
 };
 
 #endif//SOURCEFILE_H

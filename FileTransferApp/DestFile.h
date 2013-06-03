@@ -16,7 +16,7 @@ public:
 	~DestFile(void) {};
 
 	//creates a new file to be written to
-	BOOL Create(LPCTSTR wsPath, LARGE_INTEGER& liExptectedSize);
+	BOOL Create(LPCTSTR wsPath, LARGE_INTEGER& liExptectedSize) override;
 
 	//closes the file, after it has written to it.
 	void Close()
@@ -36,7 +36,7 @@ public:
 	}
 
 	//writes into a file
-	BOOL WriteBlock(DWORD dwSize);
+	BOOL WriteBlock(DWORD dwSize) override;
 };
 
 #endif//DESTFILE_H

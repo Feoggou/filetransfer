@@ -21,6 +21,7 @@ WCHAR* Send::wsParentFileDisplayName = NULL;
 WCHAR* Send::wsChildFileName = NULL;
 
 Send::Send()
+	: Worker(/*is receive*/ false)
 {
 }
 
@@ -187,8 +188,8 @@ DWORD Send::ThreadProc(void* p)
 		//SENDING THE ITEM TYPE
 		if (false == pThis->m_dataTransferer.SendDataSimple(&Send::itemType, sizeof(Send::itemType))) return 0;
 
-		//ONLY IF itemType == ItemType::Folder
-		if (Send::itemType == ItemType::Folder)
+		//ONLY IF itemType == ItemType_Folder
+		if (Send::itemType == ItemType_Folder)
 		{
 			//SENDING THE MODE: NORMAL/REPAIR
 			if (BST_CHECKED == SendMessage(MainDlg::m_hCheckRepairMode, BM_GETCHECK, 0, 0))
@@ -213,7 +214,7 @@ DWORD Send::ThreadProc(void* p)
 
 		//CALCULATING AND SENDING FILE/FILES SIZE
 		CDoubleList<FILE_ITEM> Items(OnDestroyFileItemCoTask);
-		if (Send::itemType == ItemType::File)
+		if (Send::itemType == ItemType_File)
 		{
 			if (false == CalcFileSize(Send::wsParentFileName, liSize)) 
 			{
@@ -269,7 +270,7 @@ DWORD Send::ThreadProc(void* p)
 		if (liSize.QuadPart % BLOCKSIZE) Send::dwNrGreatParts++;
 
 		//RECEIVING THE CONFIRMATION: whether the transfer is allowed or denied:
-		if (Send::itemType == ItemType::File)
+		if (Send::itemType == ItemType_File)
 			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Asking your friend to receive the file...", 0);
 		else
 			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Asking your friend to receive the folder...", 0);
@@ -281,7 +282,7 @@ DWORD Send::ThreadProc(void* p)
 
 		if (bConfirmed == 0) 
 		{
-			if (Send::itemType == ItemType::File)
+			if (Send::itemType == ItemType_File)
 				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"The file has been refused...", 0);
 			else
 				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"The folder has been refused...", 0);
@@ -299,7 +300,7 @@ DWORD Send::ThreadProc(void* p)
 		QueryPerformanceCounter(&liCountFirst);
 		QueryPerformanceFrequency(&liFreq);
 
-		if (itemType == ItemType::File)
+		if (itemType == ItemType_File)
 		{
 			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Preparing to send the file...", 0);
 
@@ -328,7 +329,7 @@ DWORD Send::ThreadProc(void* p)
 				//the relative path
 				if (false == pThis->m_dataTransferer.SendData(I->m_Value.wsFullName + nPos, len * 2)) return 0;
 				//if it is a file, we send the file
-				if (I->m_Value.type == ItemType::File)
+				if (I->m_Value.type == ItemType_File)
 				{
 					if (false == pThis->SendOneFile(I->m_Value.wsFullName, I->m_Value.size)) 
 					{
@@ -366,7 +367,7 @@ DWORD Send::ThreadProc(void* p)
 		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 0);
 		SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 100, 0);
 
-		if (Send::itemType == ItemType::File)
+		if (Send::itemType == ItemType_File)
 		{
 			StringFormatW(wsMessage, L"The file has been transfered successfully in %s!", wsTime);
 			//we post this message, because the UI thread must perform it and this thread must continue

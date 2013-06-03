@@ -71,4 +71,8 @@ public:
 		GetFileSizeEx(m_hFile, &liSize);
 		return liSize.QuadPart;
 	}
+
+	virtual BOOL WriteBlock(DWORD dwSize) {return false;}
+	virtual BOOL ReadBlock(DWORD& dwSize) {return false;}
+	virtual BOOL Create(LPCTSTR wsPath, LARGE_INTEGER& liExptectedSize) {return false;}
 };

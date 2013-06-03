@@ -143,7 +143,7 @@ void SearchFolder(IShellFolder* pSearchFolder, CDoubleList<FILE_ITEM> &Items, LA
 				item.size = 0;
 
 				item.wsFullName = wsFullName;
-				item.type = ItemType::Folder;
+				item.type = ItemType_Folder;
 				Items.push_back(item);
 
 				SearchFolder(pNewSearchFolder, Items, liSize);
@@ -165,7 +165,7 @@ void SearchFolder(IShellFolder* pSearchFolder, CDoubleList<FILE_ITEM> &Items, LA
 				liSize.QuadPart += item.size;
 
 				item.wsFullName = wsFullName;
-				item.type = ItemType::File;
+				item.type = ItemType_File;
 				Items.push_back(item);
 			}
 		}

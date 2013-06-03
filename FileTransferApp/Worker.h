@@ -3,11 +3,12 @@
 #include "Thread.h"
 #include "Socket.h"
 #include "DataTransferer.h"
+#include "File.h"
 
 class Worker
 {
 public:
-	Worker(void);
+	Worker(bool is_receive);
 	virtual ~Worker(void) = 0;
 
 	Socket* GetSocket() {return m_pSocket;}
@@ -16,6 +17,7 @@ public:
 	void StartConnThread();
 
 	void CloseSocket();
+	void CloseFile();
 
 private:
 	static DWORD ConnThreadProc(void*);
@@ -28,5 +30,6 @@ private:
 protected:
 	Socket*				m_pSocket;
 	DataTransferer		m_dataTransferer;
+	File*				m_pFile;
 };
 

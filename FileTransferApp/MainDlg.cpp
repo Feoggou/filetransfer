@@ -356,7 +356,7 @@ void MainDlg::PickFile(HWND hDlg)
 
 	if (!result.empty()) {
 		//doing what we need with it.
-		Send::itemType = ItemType::File;
+		Send::itemType = ItemType_File;
 
 		//retrieve the selected item (as path)
 		int len = result.length();
@@ -384,7 +384,7 @@ void MainDlg::PickFolder(HWND hDlg)
 
 	if (!result.empty()) {
 		//ok, so the selection is ok. we fill the info
-		Send::itemType = ItemType::Folder;
+		Send::itemType = ItemType_Folder;
 		int len = result.length();
 		len++;
 
@@ -414,7 +414,7 @@ void MainDlg::CloseAll()
 
 	//cleaning up
 	//receive
-	if (Recv::File.IsOpened()) Recv::File.Close();
+	m_recv.CloseFile();
 	if (Recv::wsParentDisplayName) {delete[] Recv::wsParentDisplayName; Recv::wsParentDisplayName = 0;}
 	if (Recv::wsChildFileName) {delete[] Recv::wsChildFileName; Recv::wsChildFileName = NULL;}
 

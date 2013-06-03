@@ -3,17 +3,27 @@
 #include "SocketClient.h"
 #include "MainDlg.h"
 #include "Application.h"
+#include "DestFile.h"
+#include "SourceFile.h"
 
 
-Worker::Worker(void)
+Worker::Worker(bool is_receive)
 	: m_dataTransferer(),
-	m_pSocket(nullptr)
+	m_pSocket(nullptr),
+	m_pFile(nullptr)
 {
+	if (is_receive) {
+		m_pFile = new DestFile;
+	} else {
+		m_pFile = new SourceFile;
+	}
 }
 
 
 Worker::~Worker(void)
 {
+	delete m_pFile;
+	m_pFile = nullptr;
 }
 
 
@@ -115,4 +125,11 @@ final:
 	else PostMessage(theApp->GetMainWindow(), WM_CLOSE, 0, 0);
 
 	return 0;
+}
+
+void Worker::CloseFile()
+{
+	if (m_pFile) {
+		m_pFile->Close();
+	}
 }

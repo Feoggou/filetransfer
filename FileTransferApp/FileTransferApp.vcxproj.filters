@@ -103,6 +103,12 @@
     <ClCompile Include="Send.cpp">
       <Filter>Code\Transfer</Filter>
     </ClCompile>
+    <ClCompile Include="FileReceiver.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSender.cpp">
+      <Filter>Code\Transfer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -196,6 +202,12 @@
       <Filter>Code\Transfer</Filter>
     </ClInclude>
     <ClInclude Include="Send.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="FileReceiver.h">
+      <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSender.h">
       <Filter>Code\Transfer</Filter>
     </ClInclude>
   </ItemGroup>

@@ -47,7 +47,7 @@
 
 //DATA TYPES
 //specifies what is being transferred: a file or a folder
-enum ItemType{Folder, File};
+enum ItemType{ItemType_Folder, ItemType_File};
 //specifies how the program is connected, and if it is connected
 enum Conn{NotConnected, ConnAsServer, ConnAsClient};
 

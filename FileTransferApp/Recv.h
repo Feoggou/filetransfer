@@ -14,7 +14,6 @@ public:
 
 	//FILE AND DATA
 	//the file that is saved on the disk and written to:
-	static DestFile File;
 	//how much has been transferred from the global data
 	static DWORD dwCurrentPartGlobal;
 	//specifies whether in this transfer will be sent only missing files in the destination directory (if true)
@@ -36,9 +35,6 @@ public:
 	static WCHAR* wsParentDisplayName;
 	//if an entire folder is transferred, this is the path of the current child item:
 	static WCHAR* wsChildFileName;
-
-	//receives a file that will be saved with filename (full file name) wsSavePath.
-	BOOL ReceiveOneFile();
 
 	//the thread for receiving data
 	static DWORD ThreadProc(void*);
