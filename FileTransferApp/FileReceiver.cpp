@@ -7,8 +7,8 @@
 #include "File.h"
 
 
-FileReceiver::FileReceiver(DataTransferer& dataTransferer, const std::wstring& fileName, File& file)
-	:FileTransferer(dataTransferer, fileName, file)
+FileReceiver::FileReceiver(DataTransferer& dataTransferer, const std::wstring& fileName, File& file, TransferProgress& transferProgress)
+	:FileTransferer(dataTransferer, fileName, file, transferProgress)
 {
 }
 

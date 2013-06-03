@@ -18,16 +18,7 @@ public:
 	//FILE AND DATA
 	//the file that is read from and transferred to the other computer:
 	static SourceFile File;
-	//how much has been transferred from the global data
-	static DWORD dwCurrentPartGlobal;
-	//the type of the item sent
-	//specifies whether in this transfer will be sent only missing files in the destination directory (if true)
-	//or it will write all files - overwriting (if false).
 	static BOOL bModeRepair;
-	//the number of... great parts?
-	static DWORD dwNrGreatParts;
-	//the total size: if only one file, the size of that file; if more files, the sum of all sizes.
-	static WCHAR wsTotalSize[20];
 
 	//CONNECTION
 
@@ -44,8 +35,6 @@ public:
 	static WCHAR* wsChildFileName;
 
 	//FUNCTIONS
-	//function for sending one file
-	BOOL SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize);
 
 	//the thread for sending data
 	static DWORD ThreadProc(void*);

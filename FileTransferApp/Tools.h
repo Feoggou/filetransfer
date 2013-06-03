@@ -6,7 +6,7 @@
 //TODO: split
 
 //converts a size from LARGE_INTEGER to a user-friendly string.
-void SizeLItoString(LARGE_INTEGER&liSize, WCHAR* wsSize);
+void SizeLLtoString(LONGLONG&liSize, WCHAR* wsSize);
 
 //counts the digits of the specified integer number
 int CountDigits(int nInteger);

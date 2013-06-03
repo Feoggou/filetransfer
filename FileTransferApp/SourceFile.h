@@ -19,7 +19,7 @@ public:
 	~SourceFile(void);
 
 	//opens an exiting file for reading
-	BOOL Open(LPCTSTR wsPath, LONGLONG* pllSize = NULL);
+	BOOL Open(LPCTSTR wsPath, LONGLONG* pllSize) override;
 
 	//reads from a file
 	BOOL ReadBlock(DWORD& dwSize) override;

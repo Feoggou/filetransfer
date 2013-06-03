@@ -4,16 +4,14 @@
 #include "CRC.h"
 #include "Tools.h"
 #include "String.h"
+#include "FileSender.h"
 
 #include "Application.h"
 
 #include <math.h>
 
 SourceFile Send::File;
-DWORD Send::dwCurrentPartGlobal = 0;
 BOOL Send::bModeRepair = false;
-DWORD Send::dwNrGreatParts = 0;
-WCHAR Send::wsTotalSize[20];
 ItemType Send::itemType;
 
 WCHAR* Send::wsParentFileName = NULL;
@@ -23,146 +21,6 @@ WCHAR* Send::wsChildFileName = NULL;
 Send::Send()
 	: Worker(/*is receive*/ false)
 {
-}
-
-BOOL Send::SendOneFile(WCHAR* wsReadFile, LONGLONG& llSize)
-{
-	//now, we open the file and send it to save
-	if (FALSE == File.Open(wsReadFile, &llSize)) return false;
-
-	Send::wsChildFileName = wsReadFile;
-	DWORD nrParts = 0;
-	{
-		m_dataTransferer.SendDataShort(&llSize, sizeof(LONGLONG));
-		nrParts = (DWORD)llSize / BLOCKSIZE;
-		if (llSize % BLOCKSIZE) nrParts++;
-	}
-
-	if (bModeRepair)
-	{
-		//we need confirmation: whether this file is ok or not
-		BYTE exists;
-		if (false == m_dataTransferer.ReceiveDataShort(&exists, sizeof(BYTE))) return false;
-		//if the file is ok, we skip it:
-		if (1 == exists) 
-		{
-			Send::File.Close(); 
-			Send::dwCurrentPartGlobal += nrParts;
-			if (!MainDlg::m_bIsMinimized)
-			{
-				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsReadFile, 1);
-				int oldpos = Send::dwCurrentPartGlobal * 100 / Send::dwNrGreatParts;
-				PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, oldpos, 0);
-			}
-			return true;
-		}
-	}
-
-	//we send all but the last piece:
-	DWORD oldpos = 0;
-	WCHAR wsMessage[300];
-
-	LARGE_INTEGER last_count, curr_count, freq;
-	QueryPerformanceCounter(&last_count);
-	QueryPerformanceFrequency(&freq);
-
-	WCHAR wsTimeLeft[20];
-	StringCopy(wsTimeLeft, L"unknown");
-
-	DWORD lasti = 0, deltai = 0;
-	float deltax = 0, delta = 0;
-	float speed = 0;
-	
-	WCHAR wsSpeed[15];
-	BOOL bGotInside = FALSE;
-
-	DWORD dwRead;
-
-	//transfering the file
-	for (DWORD i = 1; i < nrParts; i++)
-	{
-		if (bOrderEnd) return false;
-
-		//reading from the file
-		if (false == Send::File.ReadBlock(dwRead)) return false;
-
-		//SENDING DATA
-		if (false == m_dataTransferer.SendData(Send::File.m_pCurrentPos, dwRead)) return false;
-
-		dwCurrentPartGlobal++;
-
-		//we must update the UI
-		QueryPerformanceCounter(&curr_count);
-
-		if (!MainDlg::m_bIsMinimized)
-		{
-			//timpul in secude (float) in care s-au transferat BLOCKSIZE bytes.
-			delta = ((curr_count.QuadPart - last_count.QuadPart)/(float)freq.QuadPart);
-			//timpul, aprox o secunda, folosit pentru actualizarea UI
-			deltax += delta;
-			if (deltax >= 1)
-			{
-				bGotInside = true;
-				//numarul de partzi transmise in timpul deltax
-				deltai = i - lasti;
-				//deltax/deltai : timpul aprox in care ar trebui sa se faca transferul unei singure partzi
-				//nrGreatParts - dwCurrentPartGlobal : nr de partzi ramase din toate fisierele, inclusiv cel curent
-				//(deltax / deltai) * (nrParts - i) : timpul aprox in care ar trebui sa se faca transferul restului de partzi
-				FormatTime(wsTimeLeft, (DWORD)(ceil((deltax/(float)deltai) * (dwNrGreatParts - dwCurrentPartGlobal + 1))));
-				lasti = i;
-			
-				//oldpos = pozitia in bara de progress, se actualizeaza aprox. o data pe secunda.
-				//oldpos = x, din x% (x = 1->100) finished all.
-				oldpos = dwCurrentPartGlobal * 100 / dwNrGreatParts;
-				PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, oldpos, 0);
-				//viteza = nr de partzi care s-au transferat in timpul deltax * catzi bytes are fiecare parte / deltax
-				if (deltai) speed = deltai * BLOCKSIZE / deltax;
-				else {speed = 0;}
-
-				SpeedFtoString(speed, wsSpeed);
-				StringFormat(wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", oldpos, wsTotalSize, wsSpeed, wsTimeLeft);
-				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 0);
-
-				SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsReadFile, 1);
-
-				deltax = 0;
-			}
-		}
-
-		last_count = curr_count;
-		
-	}
-
-	//now, send the last piece. we do not know how large it is, so we have to read its size first.
-	if (false == File.ReadBlock(dwRead)) return false;
-
-	//NOW WE TRANSFER THE SIZE OF THE LAST PIECE
-	if (false == m_dataTransferer.SendDataShort(&dwRead, sizeof(DWORD))) return false;
-
-	//NOW WE TRANSFER THE LAST PIECE
-	if (false == m_dataTransferer.SendData(Send::File.m_pCurrentPos, dwRead)) return false;
-
-	Send::File.Close();
-
-	dwCurrentPartGlobal++;
-
-	if (!MainDlg::m_bIsMinimized)
-	{
-		//we update the user interface
-		oldpos = dwCurrentPartGlobal * 100 / dwNrGreatParts;
-		if (!bGotInside)
-		{
-			speed = nrParts * BLOCKSIZE / deltax;
-			SpeedFtoString(speed, wsSpeed);
-			FormatTime(wsTimeLeft, (DWORD)(ceil((deltax/(float)nrParts) * (dwNrGreatParts - dwCurrentPartGlobal + 1))));
-		}
-		StringFormat(wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", oldpos, wsTotalSize, wsSpeed , wsTimeLeft);
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 0);
-
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsReadFile, 1);
-		PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, oldpos, 0);
-	}
-	return true;
 }
 
 DWORD Send::ThreadProc(void* p)
@@ -178,9 +36,9 @@ DWORD Send::ThreadProc(void* p)
 		//cleaning anything that was left:
 		if (Send::File.IsOpened()) Send::File.Close();
 		//we do not remove Send::wsParentFileName and Send::wsParentDisplayName because they were chosen in BROWSE and we need them NOW
-		Send::dwCurrentPartGlobal = 0;
+
+		pThis->m_transferProgress.BeginBatch();
 		Send::bModeRepair = 0;
-		Send::dwNrGreatParts = 0;
 
 		PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, 0, 0);
 		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hCheckRepairMode, 0);
@@ -265,9 +123,7 @@ DWORD Send::ThreadProc(void* p)
 			if (false == pThis->m_dataTransferer.SendDataSimple(&liSize.QuadPart, sizeof(liSize.QuadPart))) return 0;
 		}
 
-		SizeLItoString(liSize, Send::wsTotalSize);
-		Send::dwNrGreatParts = (DWORD) liSize.QuadPart / BLOCKSIZE;
-		if (liSize.QuadPart % BLOCKSIZE) Send::dwNrGreatParts++;
+		pThis->m_transferProgress.SetFileSize(liSize.QuadPart);
 
 		//RECEIVING THE CONFIRMATION: whether the transfer is allowed or denied:
 		if (Send::itemType == ItemType_File)
@@ -303,8 +159,10 @@ DWORD Send::ThreadProc(void* p)
 		if (itemType == ItemType_File)
 		{
 			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)L"Preparing to send the file...", 0);
-
-			if (false == pThis->SendOneFile(Send::wsParentFileName, liSize.QuadPart)) 
+			
+			Send::wsChildFileName = Send::wsParentFileName;
+			bool result = FileSender(pThis->m_dataTransferer, Send::wsParentFileName, *pThis->m_pFile, liSize.QuadPart, Send::bModeRepair, pThis->m_transferProgress)();
+			if (false == result) 
 			{
 				return 0;
 			}
@@ -331,7 +189,8 @@ DWORD Send::ThreadProc(void* p)
 				//if it is a file, we send the file
 				if (I->m_Value.type == ItemType_File)
 				{
-					if (false == pThis->SendOneFile(I->m_Value.wsFullName, I->m_Value.size)) 
+					bool result = FileSender(pThis->m_dataTransferer, I->m_Value.wsFullName, *pThis->m_pFile, I->m_Value.size, Send::bModeRepair, pThis->m_transferProgress)();
+					if (!result) 
 					{
 						return 0;
 					}
@@ -358,29 +217,7 @@ DWORD Send::ThreadProc(void* p)
 		}
 		else dbTime = ceil(dbTime);
 
-		WCHAR wsTime[20];
-		FormatTime(wsTime, (DWORD)dbTime);
-
-		//we update the user interface
-		WCHAR wsMessage[300];
-		StringFormat(wsMessage, L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!", Send::wsTotalSize);
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 0);
-		SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 100, 0);
-
-		if (Send::itemType == ItemType_File)
-		{
-			StringFormatW(wsMessage, L"The file has been transfered successfully in %s!", wsTime);
-			//we post this message, because the UI thread must perform it and this thread must continue
-			//sending keep-alive messages
-			PostMessage(theApp->GetMainWindow(), WM_SHOWMESSAGEBOX, 0, (LPARAM)wsMessage);
-		}
-		else
-		{
-			StringFormatW(wsMessage, L"The folder has been transfered successfully in %s!", wsTime);
-			//we post this message, because the UI thread must perform it and this thread must continue
-			//sending keep-alive messages
-			PostMessage(theApp->GetMainWindow(), WM_SHOWMESSAGEBOX, 0, (LPARAM)wsMessage);
-		}
+		pThis->m_transferProgress.EndBatch((DWORD)dbTime);
 	}
 	return 0;
 }

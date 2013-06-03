@@ -105,7 +105,7 @@ DWORD Recv::ThreadProc(void* p)
 		handshake_thread.Start(DataTransferer::HandShake, (void*)pThis->m_pSocket);
 		
 		//format the size to display to the user.
-		SizeLItoString(liSize, Recv::wsTotalSize);
+		SizeLLtoString(liSize.QuadPart, Recv::wsTotalSize);
 		Recv::dwNrGreatParts = (DWORD) liSize.QuadPart / BLOCKSIZE;
 		if (liSize.QuadPart % BLOCKSIZE) Recv::dwNrGreatParts++;
 
@@ -215,7 +215,7 @@ DWORD Recv::ThreadProc(void* p)
 			Recv::wsChildFileName = new WCHAR[lenChild];
 			StringCopy(Recv::wsChildFileName, wsSavePath.s);
 
-			if (false == FileReceiver(pThis->m_dataTransferer, wsChildFileName, *pThis->m_pFile)())
+			if (false == FileReceiver(pThis->m_dataTransferer, wsChildFileName, *pThis->m_pFile, pThis->m_transferProgress)())
 			{
 				DeleteFile(Recv::wsChildFileName);
 				return false;
@@ -268,7 +268,7 @@ DWORD Recv::ThreadProc(void* p)
 				if (false == pThis->m_dataTransferer.ReceiveData(Recv::wsChildFileName + nSaveLen + 1, len * 2)) return false;
 				if (type == ItemType_File)
 				{
-					if (false == FileReceiver(pThis->m_dataTransferer, wsChildFileName, *pThis->m_pFile)())
+					if (false == FileReceiver(pThis->m_dataTransferer, wsChildFileName, *pThis->m_pFile, pThis->m_transferProgress)())
 					{
 						if (PathFileExistsEx(Recv::wsChildFileName))
 							DeleteFile(Recv::wsChildFileName);

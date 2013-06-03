@@ -75,4 +75,5 @@ public:
 	virtual BOOL WriteBlock(DWORD dwSize) {return false;}
 	virtual BOOL ReadBlock(DWORD& dwSize) {return false;}
 	virtual BOOL Create(LPCTSTR wsPath, LARGE_INTEGER& liExptectedSize) {return false;}
+	virtual BOOL Open(LPCTSTR wsPath, LONGLONG* pllSize = NULL) {return false;}
 };

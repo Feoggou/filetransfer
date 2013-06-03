@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "DataTransferer.h"
 #include "File.h"
+#include "TransferProgress.h"
 
 class Worker
 {
@@ -31,5 +32,6 @@ protected:
 	Socket*				m_pSocket;
 	DataTransferer		m_dataTransferer;
 	File*				m_pFile;
+	TransferProgress	m_transferProgress;
 };
 

@@ -9,7 +9,7 @@
 //TODO: split
 
 
-void SizeLItoString(LARGE_INTEGER&liSize, WCHAR* wsSize)
+void SizeLLtoString(LONGLONG&liSize, WCHAR* wsSize)
 {
 	//calculating the size in KB, MB or GB.
 	byte bWhich = 0;//0 = bytes; 1 = KB; 2 = MB; 3 = GB;
@@ -17,9 +17,9 @@ void SizeLItoString(LARGE_INTEGER&liSize, WCHAR* wsSize)
 
 	{
 		double dbKB, dbMB, dbGB;
-		dbSize = (double)liSize.QuadPart;
+		dbSize = (double)liSize;
 		//check dSize in KB
-		dbKB = liSize.QuadPart / (double)1024;
+		dbKB = liSize / (double)1024;
 		if (dbKB > 1)
 		{
 			//we have size in dKB
@@ -184,7 +184,7 @@ void SearchFolder(IShellFolder* pSearchFolder, CDoubleList<FILE_ITEM> &Items, LA
 BOOL CalcFileSize(const WCHAR* wsPath, LARGE_INTEGER& liSize)
 {
 	SourceFile File;
-	if (FALSE == File.Open(wsPath)) return false;
+	if (FALSE == File.Open(wsPath, nullptr)) return false;
 
 	liSize.QuadPart = File.GetSize();
 	File.Close();
