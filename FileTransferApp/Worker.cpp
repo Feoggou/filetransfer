@@ -7,10 +7,11 @@
 #include "SourceFile.h"
 
 
-Worker::Worker(bool is_receive)
+Worker::Worker(bool is_receive, HWND hProgressBar)
 	: m_dataTransferer(),
 	m_pSocket(nullptr),
-	m_pFile(nullptr)
+	m_pFile(nullptr),
+	m_transferProgress(!is_receive, hProgressBar)
 {
 	if (is_receive) {
 		m_pFile = new DestFile;

@@ -7,10 +7,10 @@
 class TransferProgress
 {
 public:
-	TransferProgress(void);
+	TransferProgress(bool isSend, HWND hProgressBar);
 	~TransferProgress(void);
 
-	void UpdateFileSending();
+	void UpdateFileTransferring();
 	void UpdateSendFinished();
 
 	void BeginFile(const std::wstring& fileName, DWORD countParts);
@@ -20,10 +20,15 @@ public:
 
 	void SetFileSize(LONGLONG fileSize);
 
+	int GetTotalSizeStringLength() const;
+	LPCWSTR GetTotalSizeString() const {return m_wsTotalSize;}
+
 	void BeginBatch();
 	void EndBatch(DWORD dwTime);
 
+	//currently used only by send
 	void IncreaseProgress(int parts);
+	void IncreaseCurrentPartGlobal() {++m_dwCurrentPartGlobal;}
 
 private:
 	float			m_delta;
@@ -55,6 +60,9 @@ private:
 
 	WCHAR			m_wsMessage[300];
 	WCHAR			m_wsTotalSize[20];
+
+	bool			m_isSend;
+	HWND			m_hProgressBar;
 
 	std::wstring	m_fileName;
 };

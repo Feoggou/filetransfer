@@ -19,7 +19,7 @@ WCHAR* Send::wsParentFileDisplayName = NULL;
 WCHAR* Send::wsChildFileName = NULL;
 
 Send::Send()
-	: Worker(/*is receive*/ false)
+	: Worker(/*is receive*/ false, MainDlg::m_hBarSend)
 {
 }
 

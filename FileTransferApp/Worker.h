@@ -9,7 +9,7 @@
 class Worker
 {
 public:
-	Worker(bool is_receive);
+	Worker(bool is_receive, HWND hProgressBar);
 	virtual ~Worker(void) = 0;
 
 	Socket* GetSocket() {return m_pSocket;}

@@ -13,16 +13,9 @@ public:
 	Recv();
 
 	//FILE AND DATA
-	//the file that is saved on the disk and written to:
-	//how much has been transferred from the global data
-	static DWORD dwCurrentPartGlobal;
 	//specifies whether in this transfer will be sent only missing files in the destination directory (if true)
 	//or it will write all files - overwriting (if false).
 	static BOOL bModeRepair;
-	//the number of... great parts?
-	static DWORD dwNrGreatParts;
-	//the total size: if only one file, the size of that file; if more files, the sum of all sizes.
-	static WCHAR wsTotalSize[20];
 
 	//CONNECTION
 	

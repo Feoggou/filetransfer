@@ -35,7 +35,7 @@ bool FileSender::operator()()
 		BYTE exists;
 		if (false == m_dataTransferer.ReceiveDataShort(&exists, sizeof(BYTE))) return false;
 		//if the file is ok, we skip it:
-		if (1 == exists) 
+		if (exists) 
 		{
 			m_file.Close(); 
 			m_transferProgress.EndFile(true, nrParts);
@@ -65,7 +65,7 @@ bool FileSender::operator()()
 		if (false == m_dataTransferer.SendData(m_file.m_pCurrentPos, dwRead)) return false;
 
 		m_transferProgress.IncreaseProgress(1);
-		
+		m_transferProgress.UpdateFileTransferring();
 	}
 
 	//now, send the last piece. we do not know how large it is, so we have to read its size first.

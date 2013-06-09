@@ -31,17 +31,14 @@ the folder you have on your disk. Do you want to receive it? If yes, you will re
 #define IDS_FOLDER_COULD_NOT_BE_CREATED L"Folder \"%s\" could not be created."
 #define IDS_FINISHED_TRANSFERRING L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!"
 
-DWORD Recv::dwCurrentPartGlobal = 0;
 BOOL Recv::bModeRepair = false;
-DWORD Recv::dwNrGreatParts = 0;
-WCHAR Recv::wsTotalSize[20];
 
 ItemType Recv::itemType;
 WCHAR* Recv::wsParentDisplayName = NULL;
 WCHAR* Recv::wsChildFileName = NULL;
 
 Recv::Recv()
-	: Worker(/*is receive*/ true)
+	: Worker(/*is receive*/ true, MainDlg::m_hBarRecv)
 {
 }
 
@@ -57,8 +54,8 @@ DWORD Recv::ThreadProc(void* p)
 		if (pThis->m_pFile->IsOpened()) pThis->m_pFile->Close();
 		if (Recv::wsParentDisplayName) {delete[] Recv::wsParentDisplayName; Recv::wsParentDisplayName = 0;}
 		if (Recv::wsChildFileName) {delete[] Recv::wsChildFileName; Recv::wsChildFileName = 0;}
-		Recv::dwCurrentPartGlobal = 0;
-		Recv::dwNrGreatParts = 0;
+
+		pThis->m_transferProgress.BeginBatch();
 
 		//here we wait until a file will be transferred!
 		if (false == pThis->m_dataTransferer.WaitForDataReceive()) return 0;
@@ -104,10 +101,7 @@ DWORD Recv::ThreadProc(void* p)
 		Thread handshake_thread;
 		handshake_thread.Start(DataTransferer::HandShake, (void*)pThis->m_pSocket);
 		
-		//format the size to display to the user.
-		SizeLLtoString(liSize.QuadPart, Recv::wsTotalSize);
-		Recv::dwNrGreatParts = (DWORD) liSize.QuadPart / BLOCKSIZE;
-		if (liSize.QuadPart % BLOCKSIZE) Recv::dwNrGreatParts++;
+		pThis->m_transferProgress.SetFileSize(liSize.QuadPart);
 
 		WCHAR* wsMessage;
 		WCHAR *wsTitle = NULL;
@@ -116,11 +110,12 @@ DWORD Recv::ThreadProc(void* p)
 		{
 			int szlen = StringLenW(IDS_INVITE_ACCEPT_FILE);
 			szlen += StringLenW(Recv::wsParentDisplayName);
-			szlen += StringLenW(Recv::wsTotalSize);
+
+			szlen += pThis->m_transferProgress.GetTotalSizeStringLength();
 			szlen++;
 
 			wsMessage = new WCHAR[szlen];
-			StringFormatW(wsMessage, IDS_INVITE_ACCEPT_FILE, Recv::wsParentDisplayName, Recv::wsTotalSize);
+			StringFormatW(wsMessage, IDS_INVITE_ACCEPT_FILE, Recv::wsParentDisplayName, pThis->m_transferProgress.GetTotalSizeString());
 			
 			wsTitle = IDS_TITLE_ACCEPT_FILE;
 		}
@@ -130,12 +125,12 @@ DWORD Recv::ThreadProc(void* p)
 			{
 				int szlen = StringLenW(IDS_INVITE_REPAIR_FOLDER);
 				szlen += StringLenW(Recv::wsParentDisplayName);
-				szlen += StringLenW(Recv::wsTotalSize);
+				szlen += pThis->m_transferProgress.GetTotalSizeStringLength();
 				szlen += CountDigits(nCount);
 				szlen++;
 
 				wsMessage = new WCHAR[szlen];
-				StringFormatW(wsMessage, IDS_INVITE_REPAIR_FOLDER, Recv::wsParentDisplayName, Recv::wsTotalSize, nCount);
+				StringFormatW(wsMessage, IDS_INVITE_REPAIR_FOLDER, Recv::wsParentDisplayName, pThis->m_transferProgress.GetTotalSizeString(), nCount);
 
 				wsTitle = IDS_TITLE_REPAIR_FOLDER;
 			}
@@ -143,12 +138,12 @@ DWORD Recv::ThreadProc(void* p)
 			{
 				int szlen = StringLenW(IDS_INVITE_ACCEPT_FOLDER);
 				szlen += StringLenW(Recv::wsParentDisplayName);
-				szlen += StringLenW(Recv::wsTotalSize);
+				szlen += pThis->m_transferProgress.GetTotalSizeStringLength();
 				szlen += CountDigits(nCount);
 				szlen++;
 
 				wsMessage = new WCHAR[szlen];
-				StringFormatW(wsMessage, IDS_INVITE_ACCEPT_FOLDER, Recv::wsParentDisplayName, wsTotalSize, nCount);
+				StringFormatW(wsMessage, IDS_INVITE_ACCEPT_FOLDER, Recv::wsParentDisplayName, pThis->m_transferProgress.GetTotalSizeString(), nCount);
 
 				wsTitle = IDS_TITLE_ACCEPT_FOLDER;
 			}
@@ -222,7 +217,7 @@ DWORD Recv::ThreadProc(void* p)
 			}
 
 			else  {
-				++dwCurrentPartGlobal;
+				pThis->m_transferProgress.IncreaseCurrentPartGlobal();
 			}
 		}
 		else
@@ -276,7 +271,7 @@ DWORD Recv::ThreadProc(void* p)
 					}
 
 					else  {
-						++dwCurrentPartGlobal;
+						pThis->m_transferProgress.IncreaseCurrentPartGlobal();
 					}
 				}
 				else
@@ -323,11 +318,11 @@ DWORD Recv::ThreadProc(void* p)
 
 		//we update the user interface
 		int szlen = StringLen(IDS_FINISHED_TRANSFERRING);
-		szlen += StringLen(wsTotalSize);
+		szlen += pThis->m_transferProgress.GetTotalSizeStringLength();
 		szlen++;
 
 		wsMessage = new WCHAR[szlen];
-		StringFormat(wsMessage, L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!", wsTotalSize);
+		StringFormat(wsMessage, L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!", pThis->m_transferProgress.GetTotalSizeString());
 		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 2);
 		delete[] wsMessage;
 		

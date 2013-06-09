@@ -5,7 +5,7 @@
 #include "Application.h"
 
 
-TransferProgress::TransferProgress(void)
+TransferProgress::TransferProgress(bool isSend, HWND hProgressBar)
 	: m_delta(0.0f),
 	m_dwCurrentPartGlobal(0),
 	m_deltax(0),
@@ -16,7 +16,9 @@ TransferProgress::TransferProgress(void)
 	m_dwNrGreatParts(0),
 	m_oldpos(0),
 	m_speed(0),
-	m_countParts(0)
+	m_countParts(0),
+	m_isSend(isSend),
+	m_hProgressBar(hProgressBar)
 {
 	m_curr_count.QuadPart = 0;
 	m_last_count.QuadPart = 0;
@@ -43,7 +45,7 @@ void TransferProgress::BeginFile(const std::wstring& fileName, DWORD countParts)
 	QueryPerformanceCounter(&m_last_count);
 	QueryPerformanceFrequency(&m_freq);
 	m_deltax = 0;
-	m_bGotInside = 0;
+	m_bGotInside = false;
 	m_deltai = 0;
 	m_dwPartCurrentFile = 0;
 	m_lasti = 0;
@@ -75,8 +77,8 @@ void TransferProgress::EndBatch(DWORD dwTime)
 	//we update the user interface
 	WCHAR wsMessage[300];
 	StringFormat(wsMessage, L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!", m_wsTotalSize);
-	SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, 0);
-	SendMessage(MainDlg::m_hBarSend, PBM_SETPOS, 100, 0);
+	SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, m_isSend ?  0 : 2);
+	SendMessage(m_hProgressBar, PBM_SETPOS, 100, 0);
 
 	if (Send::itemType == ItemType_File)
 	{
@@ -103,9 +105,9 @@ void TransferProgress::EndFile(bool is_skipped, DWORD add_parts)
 		if (MainDlg::m_bIsMinimized)
 			return;
 
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), 1);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), m_isSend ? 1 : 3);
 		int oldpos = m_dwCurrentPartGlobal * 100 / m_dwNrGreatParts;
-		PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, oldpos, 0);
+		PostMessage(m_hProgressBar, PBM_SETPOS, oldpos, 0);
 	}
 
 	else
@@ -123,23 +125,23 @@ void TransferProgress::EndFile(bool is_skipped, DWORD add_parts)
 			FormatTime(m_wsTimeLeft, (DWORD)(ceil((m_deltax/(float)m_countParts) * (m_dwNrGreatParts - m_dwCurrentPartGlobal + 1))));
 		}
 		StringFormat(m_wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", m_oldpos, m_wsTotalSize, m_wsSpeed , m_wsTimeLeft);
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_wsMessage, 0);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_wsMessage, m_isSend ? 0 : 2);
 
-		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), 1);
-		PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, m_oldpos, 0);
+		SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), m_isSend ? 1 : 3);
+		PostMessage(m_hProgressBar, PBM_SETPOS, m_oldpos, 0);
 	}
 }
 
 void TransferProgress::IncreaseProgress(int parts)
 {
 	m_dwPartCurrentFile += parts;
-	m_dwCurrentPartGlobal += parts;
+	//m_dwCurrentPartGlobal += parts;
 
-	//we must update the UI
-	QueryPerformanceCounter(&m_curr_count);
+	////we must update the UI
+	//QueryPerformanceCounter(&m_curr_count);
 }
 
-void TransferProgress::UpdateFileSending()
+void TransferProgress::UpdateFileTransferring()
 {
 	m_dwCurrentPartGlobal++;
 
@@ -166,16 +168,16 @@ void TransferProgress::UpdateFileSending()
 			//oldpos = pozitia in bara de progress, se actualizeaza aprox. o data pe secunda.
 			//oldpos = x, din x% (x = 1->100) finished all.
 			m_oldpos = m_dwCurrentPartGlobal * 100 / m_dwNrGreatParts;
-			PostMessage(MainDlg::m_hBarSend, PBM_SETPOS, m_oldpos, 0);
+			PostMessage(m_hProgressBar, PBM_SETPOS, m_oldpos, 0);
 			//viteza = nr de partzi care s-au transferat in timpul deltax * catzi bytes are fiecare parte / deltax
 			if (m_deltai) m_speed = m_deltai * BLOCKSIZE / m_deltax;
 			else {m_speed = 0;}
 
 			SpeedFtoString(m_speed, m_wsSpeed);
 			StringFormat(m_wsMessage, L"%d%% of %s; Speed: %s; Time Left: %s", m_oldpos, m_wsTotalSize, m_wsSpeed, m_wsTimeLeft);
-			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_wsMessage, 0);
+			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_wsMessage, m_isSend ? 0 : 2);
 
-			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), 1);
+			SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)m_fileName.data(), m_isSend ? 1 : 3);
 
 			m_deltax = 0;
 		}
@@ -193,4 +195,9 @@ void TransferProgress::SetFileSize(LONGLONG fileSize)
 	SizeLLtoString(fileSize, m_wsTotalSize);
 	m_dwNrGreatParts = (DWORD) fileSize / BLOCKSIZE;
 	if (fileSize % BLOCKSIZE) m_dwNrGreatParts++;
+}
+
+int TransferProgress::GetTotalSizeStringLength() const
+{
+	return StringLenW(m_wsTotalSize);
 }
