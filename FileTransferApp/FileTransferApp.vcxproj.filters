@@ -109,6 +109,15 @@
     <ClCompile Include="FileSender.cpp">
       <Filter>Code\Transfer</Filter>
     </ClCompile>
+    <ClCompile Include="ReceiveFilesThread.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="SendFilesThread.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="HandshakeThread.cpp">
+      <Filter>Code\Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -209,6 +218,15 @@
     </ClInclude>
     <ClInclude Include="FileSender.h">
       <Filter>Code\Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="ReceiveFilesThread.h">
+      <Filter>Code\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="SendFilesThread.h">
+      <Filter>Code\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="HandshakeThread.h">
+      <Filter>Code\Threading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

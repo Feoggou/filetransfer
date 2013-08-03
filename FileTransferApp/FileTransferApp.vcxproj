@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -95,10 +95,13 @@
     <ClCompile Include="FileSender.cpp" />
     <ClCompile Include="FileTransferer.cpp" />
     <ClCompile Include="FolderPicker.cpp" />
+    <ClCompile Include="HandshakeThread.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NickNameDlg.cpp" />
+    <ClCompile Include="ReceiveFilesThread.cpp" />
     <ClCompile Include="Recv.cpp" />
+    <ClCompile Include="SendFilesThread.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="Send.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -127,6 +130,9 @@
     <ClInclude Include="FileSender.h" />
     <ClInclude Include="FileTransferer.h" />
     <ClInclude Include="FolderPicker.h" />
+    <ClInclude Include="HandshakeThread.h" />
+    <ClInclude Include="ReceiveFilesThread.h" />
+    <ClInclude Include="SendFilesThread.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="MainDlg.h" />
