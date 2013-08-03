@@ -33,8 +33,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		app.ShowMainDialog();
 
-	} catch (std::exception&) {
+	} catch (std::exception& e) {
 		//TODO
+		MessageBoxA(0, e.what(), "Fatal error!", MB_ICONERROR);
 	}
 
 	return 0;
