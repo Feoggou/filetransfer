@@ -13,27 +13,14 @@ Application::Application(HINSTANCE hInst)
 {
 	s_hInst = hInst;
 
-	_ASSERT(!s_pInst);
+	ASSERT(!s_pInst);
 
 	s_pInst = this;
 
 	CoInitialize(0);
-
-	//initialize the common controls
-	INITCOMMONCONTROLSEX InitCtrls;
-	InitCtrls.dwSize = sizeof(InitCtrls);
-	InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	InitCommonControlsEx(&InitCtrls);
-
-	//initialize the sockets
-	int nError = Socket::InitSockets();
-	if (nError)
-	{
-		THROW(WindowsException, nError);
-
-		DisplayError(nError);
-		//return -1;
-	}
+	InitCommControls();
+	Socket::InitSockets();
+	LoadFriends();
 
 	crcInit();
 
@@ -55,9 +42,18 @@ Application::~Application(void)
 	CoUninitialize();
 }
 
+void Application::InitCommControls()
+{
+	//initialize the common controls
+	INITCOMMONCONTROLSEX InitCtrls;
+	InitCtrls.dwSize = sizeof(InitCtrls);
+	InitCtrls.dwICC = ICC_WIN95_CLASSES;
+	InitCommonControlsEx(&InitCtrls);
+}
+
 void Application::ShowMainDialog()
 {
-	_ASSERT(!m_pMainDlg.get());
+	ASSERT(!m_pMainDlg.get());
 
 	m_pMainDlg.reset(new MainDlg);
 	m_pMainDlg->CreateModal();
@@ -73,7 +69,7 @@ void Application::LoadFriends()
 	//initialize registry: we retrieve the Nicknames and IPs and set in the combo-box
 	//the last used IP address. We save m_hKey for further use.
 	//m_hKey will be HKLM\Software\FeoggouApp\FileTransferApp
-	DWORD dwError = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software", 0, KEY_READ, &m_hKey);
+	DWORD dwError = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software", 0, KEY_READ, &m_hKey);
 	if (dwError != 0)
 	{
 		DisplayError(dwError);
@@ -155,6 +151,8 @@ void Application::LoadFriends()
 
 void Application::SaveFriend(const std::wstring& name, const std::wstring& ip)
 {
+	ASSERT(m_hKey);
+
 	//we write into the registry the nickname and its associated IP
 	DWORD cbData = (name.length() + 1) * 2;
 	DWORD dwError = RegSetValueExW(m_hKey, name.data(), 0, REG_SZ, (BYTE*)ip.data(), cbData);
@@ -172,7 +170,7 @@ void Application::SaveFriend(const std::wstring& name, const std::wstring& ip)
 	}
 }
 
-const std::wstring&& Application::GetIpOfFriend(const std::wstring& friend_name)
+std::wstring Application::GetIpOfFriend(const std::wstring& friend_name)
 {
 	WCHAR wsIP[31];
 	*wsIP = NULL;
@@ -207,7 +205,7 @@ void Application::SetLastFriend(const std::wstring& last_friend_name)
 	}
 }
 
-const std::wstring&& Application::GetLastFriend() const
+std::wstring Application::GetLastFriend() const
 {
 	//retrieve the last Nickname this computer was connected to:
 	DWORD dwNickSize = 20;

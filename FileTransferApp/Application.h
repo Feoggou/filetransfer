@@ -22,9 +22,9 @@ public:
 	const std::wstring& GetCurrentFriend() const {return m_sCurrentFriend;}
 	const std::vector<std::wstring>& GetFriends() const {return m_friends;}
 	void SaveFriend(const std::wstring& name, const std::wstring& ip);
-	const std::wstring&& GetIpOfFriend(const std::wstring& friend_name);
+	std::wstring GetIpOfFriend(const std::wstring& friend_name);
 	void SetLastFriend(const std::wstring& last_friend_name);
-	const std::wstring&& GetLastFriend() const;
+	std::wstring GetLastFriend() const;
 
 	//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
 	Socket* GetReceiveSocket();
@@ -36,6 +36,7 @@ public:
 
 private:
 	void LoadFriends();
+	void InitCommControls();
 
 private:
 	static HINSTANCE	s_hInst;
