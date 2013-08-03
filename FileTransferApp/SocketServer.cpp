@@ -262,35 +262,27 @@ BOOL SocketServer::Reconnect()
 
 	Connected = Conn::NotConnected;
 	
-	SocketServer* pRecvServer = (SocketServer*)theApp->GetReceiveSocket();
-	SocketServer* pSendServer = (SocketServer*)theApp->GetSendSocket();
+	int port = 14147;
+	SocketServer* pServer = (SocketServer*)theApp->GetReceiveSocket();
+	if (!pServer) {
+		pServer = (SocketServer*)theApp->GetSendSocket();
+		ASSERT(pServer);
+
+		port = 14148;
+	}
 
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
 	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
 	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been lost. Trying to reconnect.");
 
-	int nError = pSendServer->Close();
+	int nError = pServer->Close();
 	if (nError)
 	{
 		DisplayError(nError);
 		return false;
 	}
 
-	nError = pRecvServer->Close();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
-	nError = pRecvServer->Create(14147);
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
-	nError = pSendServer->Create(14148);
+	nError = pServer->Create(port);
 	if (nError)
 	{
 		DisplayError(nError);
@@ -298,14 +290,7 @@ BOOL SocketServer::Reconnect()
 	}
 
 	//Listen
-	nError = pRecvServer->Listen();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
-	nError = pSendServer->Listen();
+	nError = pServer->Listen();
 	if (nError)
 	{
 		DisplayError(nError);
@@ -313,9 +298,9 @@ BOOL SocketServer::Reconnect()
 	}
 
 	//Accept
-	if (!bOrderEnd)
+	if (!bOrderEnd && port == 14147 || port == 14148)
 	{
-		nError = pRecvServer->Accept();//14147
+		nError = pServer->Accept();//14147
 		if (nError && !bOrderEnd)
 		{
 			DisplayError(nError);
@@ -323,40 +308,20 @@ BOOL SocketServer::Reconnect()
 		}
 	}
 
-	nError = pSendServer->Accept();//14148
-	if (nError && !bOrderEnd)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
 	if (bOrderEnd) return false;
 
 	DWORD dwValue = 1;
-	nError = ioctlsocket(pRecvServer->m_Connection, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
-
-	nError = ioctlsocket(pSendServer->m_Connection, FIONBIO, &dwValue);
+	nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
 	if (nError != 0)
 	{
 		return false;//WSAGetLastError();
 	}
 
 	char buffer[4];
-	while (recv(pRecvServer->m_Connection, buffer, 4, 0) > 0);
-	while (recv(pSendServer->m_Connection, buffer, 4, 0) > 0);
+	while (recv(pServer->m_Connection, buffer, 4, 0) > 0);
 
 	dwValue = 0;
-	nError = ioctlsocket(pRecvServer->m_Connection, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
-
-	nError = ioctlsocket(pSendServer->m_Connection, FIONBIO, &dwValue);
+	nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
 	if (nError != 0)
 	{
 		return false;//WSAGetLastError();
