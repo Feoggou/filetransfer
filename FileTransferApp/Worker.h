@@ -6,6 +6,9 @@
 #include "File.h"
 #include "TransferProgress.h"
 
+#include "ReceiveFilesThread.h"
+#include "SendFilesThread.h"
+
 class Worker
 {
 public:
@@ -15,23 +18,21 @@ public:
 	Socket* GetSocket() {return m_pSocket;}
 
 	void StopThreads();
-	void StartConnThread();
+	void StartConnThread(bool server);
 
 	void CloseSocket();
 	void CloseFile();
 
 private:
-	static DWORD ConnThreadProc(void*);
+	static DWORD ClientConnThreadProc(void*);
+	static DWORD ServerConnThreadProc(void*);
 
 private:
 	//THREADS
-	Thread m_transferThread;
-	Thread m_connectionThread;
+	TransferFilesThread* m_pTransferThread;
+	ConnectionThread m_connectionThread;
 
 protected:
 	Socket*				m_pSocket;
-	DataTransferer		m_dataTransferer;
-	File*				m_pFile;
-	TransferProgress	m_transferProgress;
 };
 
