@@ -61,6 +61,12 @@ void Dialog::OnDestroy()
 	EndDialog(m_hWnd, IDCANCEL);
 }
 
+void Dialog::OnOK()
+{
+	_ASSERT(m_hWnd);
+	EndDialog(m_hWnd, IDOK);
+}
+
 void Dialog::OnCommand(WORD /*code*/, WORD id, HWND hControl)
 {
 	if (hControl) {

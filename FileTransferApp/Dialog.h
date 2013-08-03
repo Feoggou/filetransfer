@@ -20,7 +20,7 @@ protected:
 	void OnDestroy() override;
 	void OnCommand(WORD source, WORD id, HWND hControl) override;
 	void OnNotify(NMHDR*) override{}
-	virtual void OnOK() {}
+	virtual void OnOK();
 	virtual void OnCancel() {}
 
 private:

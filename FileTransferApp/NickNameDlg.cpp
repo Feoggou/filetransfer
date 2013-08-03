@@ -72,5 +72,5 @@ void NickNameDlg::OnOK()
 		return;
 	}
 
-	OnOK();
+	Dialog::OnOK();
 }

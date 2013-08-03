@@ -471,7 +471,7 @@ void MainDlg::IsNicknameOrIp(const std::wstring& s, StringType& type) const
 		int nr = _wtoi(s.data());
 		if (nr > 255) {type = StringType_Invalid; return;}
 
-		BYTE byte0, byte1, byte2, byte3;
+		DWORD byte0, byte1, byte2, byte3;
 		int count_successful = swscanf(s.data(), L"%d.%d.%d.%d", &byte0, &byte1, &byte2, &byte3);
 		//_ASSERTE(count_successful == 4);
 
@@ -569,7 +569,7 @@ void MainDlg::ConnectToServer()
 	SetWindowTextW(m_hStatusText, L"The client is starting...");
 
 	//creating the connection
-	m_recv.StartConnThread();
+	m_recv.StartConnThread(/*server*/ false);
 }
 
 void MainDlg::CreateConnection()
@@ -587,7 +587,7 @@ void MainDlg::CreateConnection()
 	SetWindowTextW(m_hComboNickIP, 0);
 
 	//creating connection
-	m_send.StartConnThread();
+	m_send.StartConnThread(/*server*/ true);
 }
 
 void MainDlg::UpdateUIDisconnected()
