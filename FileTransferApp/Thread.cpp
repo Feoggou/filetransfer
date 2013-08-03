@@ -40,14 +40,19 @@ void Thread::WaitAsyncAndClose()
 	Close();
 }
 
-void Thread::Start(DWORD (*threadFunc)(void*), void* param)
-{
-	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, param, 0, 0);
-}
+//void Thread::Start(DWORD (*threadFunc)(void*), void* param)
+//{
+//	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, param, 0, 0);
+//}
+//
+//void Thread::Start(DWORD (*threadFunc)())
+//{
+//	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, 0, 0, 0);
+//}
 
-void Thread::Start(DWORD (*threadFunc)())
+void Thread::Start()
 {
-	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)threadFunc, 0, 0, 0);
+	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadFunc, this, 0, 0);
 }
 
 void Thread::Close()
