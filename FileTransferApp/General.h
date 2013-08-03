@@ -79,6 +79,9 @@ public:
 	}
 };
 
+//TODO: we'll need to use more advanced asserts
+#define ASSERT _ASSERT
+
 //VARIABLES
 //specifies that the connection should terminate.
 extern BOOL bOrderEnd;
