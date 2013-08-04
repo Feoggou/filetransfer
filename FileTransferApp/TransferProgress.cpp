@@ -5,7 +5,7 @@
 #include "Application.h"
 
 
-TransferProgress::TransferProgress(bool isSend, HWND hProgressBar)
+TransferProgress::TransferProgress(bool isSend, HWND hProgressBar, ItemType itemType)
 	: m_delta(0.0f),
 	m_dwCurrentPartGlobal(0),
 	m_deltax(0),
@@ -18,7 +18,8 @@ TransferProgress::TransferProgress(bool isSend, HWND hProgressBar)
 	m_speed(0),
 	m_countParts(0),
 	m_isSend(isSend),
-	m_hProgressBar(hProgressBar)
+	m_hProgressBar(hProgressBar),
+	m_itemType(itemType)
 {
 	m_curr_count.QuadPart = 0;
 	m_last_count.QuadPart = 0;
@@ -80,7 +81,7 @@ void TransferProgress::EndBatch(DWORD dwTime)
 	SendMessage(theApp->GetMainWindow(), WM_SETITEMTEXT, (WPARAM)wsMessage, m_isSend ?  0 : 2);
 	SendMessage(m_hProgressBar, PBM_SETPOS, 100, 0);
 
-	if (Send::itemType == ItemType_File)
+	if (m_itemType == ItemType_File)
 	{
 		StringFormatW(wsMessage, L"The file has been transfered successfully in %s!", wsTime);
 		//we post this message, because the UI thread must perform it and this thread must continue

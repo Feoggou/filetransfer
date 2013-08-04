@@ -26,9 +26,9 @@ the folder you have on your disk. Do you want to receive it? If yes, you will re
 #define IDS_FINISHED_TRANSFERRING L"100%% of %s; Speed: 0 KB/s; Time Left: Finished!"
 
 ReceiveFilesThread::ReceiveFilesThread(void)
-	: TransferFilesThread(true, MainDlg::m_hBarRecv),
+	: TransferFilesThread(true, MainDlg::m_hBarRecv)/*,
 	m_bModeRepair(false),
-	m_itemType(ItemType_File)
+	m_itemType(ItemType_File)*/
 {
 }
 
@@ -202,8 +202,8 @@ void ReceiveFilesThread::OnStart()
 
 			int lenChild = wsSavePath.length() + 1;
 			m_wsChildFileName = wsSavePath;
-
-			if (false == FileReceiver(m_dataTransferer, m_wsChildFileName, *m_pFile, m_transferProgress)())
+			
+			if (false == FileReceiver(m_dataTransferer, m_wsChildFileName, *m_pFile, m_transferProgress, m_bModeRepair)())
 			{
 				DeleteFile(m_wsChildFileName.data());
 				return /*false*/;
@@ -256,7 +256,7 @@ void ReceiveFilesThread::OnStart()
 				if (false == m_dataTransferer.ReceiveData(path, len * 2)) return /*false*/;
 				if (type == ItemType_File)
 				{
-					if (false == FileReceiver(m_dataTransferer, m_wsChildFileName, *m_pFile, m_transferProgress)())
+					if (false == FileReceiver(m_dataTransferer, m_wsChildFileName, *m_pFile, m_transferProgress, m_bModeRepair)())
 					{
 						if (PathFileExistsEx(m_wsChildFileName.data()))
 							DeleteFile(m_wsChildFileName.data());

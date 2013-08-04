@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Thread.h"
+#include "Socket.h"
 
 class HandshakeThread : public Thread
 {

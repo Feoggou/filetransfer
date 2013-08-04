@@ -7,8 +7,9 @@
 #include "File.h"
 
 
-FileReceiver::FileReceiver(DataTransferer& dataTransferer, const std::wstring& fileName, File& file, TransferProgress& transferProgress)
-	:FileTransferer(dataTransferer, fileName, file, transferProgress)
+FileReceiver::FileReceiver(DataTransferer& dataTransferer, const std::wstring& fileName, File& file, TransferProgress& transferProgress, bool bModeRepair)
+	:FileTransferer(dataTransferer, fileName, file, transferProgress),
+	m_bModeRepair(bModeRepair)
 {
 }
 
@@ -28,11 +29,11 @@ bool FileReceiver::operator()()
 	if (liSize.QuadPart % BLOCKSIZE) nrParts++;
 
 	//only if we've been notified that this should be a repair:
-	if (Recv::bModeRepair)
+	if (m_bModeRepair)
 	{
 		bool bExists = false;
 		//we need to check whether this file is ok or not:
-		if (PathFileExistsW(Recv::wsChildFileName)) bExists = true;
+		if (PathFileExistsW(m_fileName.data())) bExists = true;
 
 		if (false == m_dataTransferer.SendDataShort(&bExists, sizeof(bool))) return false;
 		//if the file is ok, we skip it:
@@ -42,7 +43,7 @@ bool FileReceiver::operator()()
 		}
 	}
 
-	if (FALSE == m_file.Create(Recv::wsChildFileName, liSize))
+	if (FALSE == m_file.Create(m_fileName.data(), liSize))
 	{
 		return false;
 	}

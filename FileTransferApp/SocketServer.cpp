@@ -1,6 +1,7 @@
 #include "SocketServer.h"
 #include "General.h"
 #include "MainDlg.h"
+#include "Debug.h"
 
 #include "Application.h"
 
@@ -258,81 +259,84 @@ int SocketServer::Close(void)
 
 BOOL SocketServer::Reconnect()
 {
-	if (bOrderEnd) return FALSE;
+	return false;
 
-	Connected = Conn::NotConnected;
-	
-	int port = 14147;
-	SocketServer* pServer = (SocketServer*)theApp->GetReceiveSocket();
-	if (!pServer) {
-		pServer = (SocketServer*)theApp->GetSendSocket();
-		ASSERT(pServer);
+	//TODO: fix later
+	//if (bOrderEnd) return FALSE;
 
-		port = 14148;
-	}
+	//Connected = Conn::NotConnected;
+	//
+	//int port = 14147;
+	//SocketServer* pServer = (SocketServer*)theApp->GetReceiveSocket();
+	//if (!pServer) {
+	//	pServer = (SocketServer*)theApp->GetSendSocket();
+	//	ASSERT(pServer);
 
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been lost. Trying to reconnect.");
+	//	port = 14148;
+	//}
 
-	int nError = pServer->Close();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
+	//PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
+	//PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
+	//SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been lost. Trying to reconnect.");
 
-	nError = pServer->Create(port);
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
+	//int nError = pServer->Close();
+	//if (nError)
+	//{
+	//	DisplayError(nError);
+	//	return false;
+	//}
 
-	//Listen
-	nError = pServer->Listen();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
+	//nError = pServer->Create(port);
+	//if (nError)
+	//{
+	//	DisplayError(nError);
+	//	return false;
+	//}
 
-	//Accept
-	if (!bOrderEnd && port == 14147 || port == 14148)
-	{
-		nError = pServer->Accept();//14147
-		if (nError && !bOrderEnd)
-		{
-			DisplayError(nError);
-			return false;
-		}
-	}
+	////Listen
+	//nError = pServer->Listen();
+	//if (nError)
+	//{
+	//	DisplayError(nError);
+	//	return false;
+	//}
 
-	if (bOrderEnd) return false;
+	////Accept
+	//if (!bOrderEnd && port == 14147 || port == 14148)
+	//{
+	//	nError = pServer->Accept();//14147
+	//	if (nError && !bOrderEnd)
+	//	{
+	//		DisplayError(nError);
+	//		return false;
+	//	}
+	//}
 
-	DWORD dwValue = 1;
-	nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
+	//if (bOrderEnd) return false;
 
-	char buffer[4];
-	while (recv(pServer->m_Connection, buffer, 4, 0) > 0);
+	//DWORD dwValue = 1;
+	//nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
+	//if (nError != 0)
+	//{
+	//	return false;//WSAGetLastError();
+	//}
 
-	dwValue = 0;
-	nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
+	//char buffer[4];
+	//while (recv(pServer->m_Connection, buffer, 4, 0) > 0);
 
-	Connected = Conn::ConnAsServer;
+	//dwValue = 0;
+	//nError = ioctlsocket(pServer->m_Connection, FIONBIO, &dwValue);
+	//if (nError != 0)
+	//{
+	//	return false;//WSAGetLastError();
+	//}
 
-	//after the connection is successful:
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 1);
-	
-	return true;
+	//Connected = Conn::ConnAsServer;
+
+	////after the connection is successful:
+	//SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
+	//PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
+	//PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 1);
+	//
+	//return true;
 }

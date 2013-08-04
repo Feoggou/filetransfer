@@ -15,12 +15,5 @@ public:
 
 private:
 	void OnStart() override;
-
-private:
-	std::wstring m_wsParentDisplayName;
-	std::wstring m_wsChildFileName;
-
-	bool		m_bModeRepair;
-	ItemType	m_itemType;
 };
 

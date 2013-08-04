@@ -8,23 +8,20 @@
 #include "SocketServer.h"
 
 Worker::Worker(bool is_receive, HWND hProgressBar)
-	: m_dataTransferer(),
-	m_pSocket(nullptr),
-	m_pFile(nullptr),
-	m_transferProgress(!is_receive, hProgressBar)
+	: m_pSocket(nullptr)
 {
-	if (is_receive) {
+	/*if (is_receive) {
 		m_pFile = new DestFile;
 	} else {
 		m_pFile = new SourceFile;
-	}
+	}*/
 }
 
 
 Worker::~Worker(void)
 {
-	delete m_pFile;
-	m_pFile = nullptr;
+	/*delete m_pFile;
+	m_pFile = nullptr;*/
 }
 
 
@@ -37,15 +34,15 @@ void Worker::StopThreads()
 	}
 
 	//first the Recv::hThread
-	if (m_transferThread.IsRunning())
+	if (m_pTransferThread->IsRunning())
 	{
-		m_transferThread.WaitAsyncAndClose();
+		m_pTransferThread->WaitAsyncAndClose();
 	}
 }
 
 void Worker::StartConnThread(bool server)
 {
-	m_connectionThread.Start(server? ServerConnThreadProc : ClientConnThreadProc, this);
+	m_connectionThread.Start(/*server? ServerConnThreadProc : ClientConnThreadProc, this*/);
 }
 
 void Worker::CloseSocket()
@@ -72,9 +69,9 @@ void Worker::CloseSocket()
 
 void Worker::CloseFile()
 {
-	if (m_pFile) {
+	/*if (m_pFile) {
 		m_pFile->Close();
-	}
+	}*/
 }
 
 DWORD Worker::ClientConnThreadProc(void* p)
@@ -87,7 +84,8 @@ DWORD Worker::ClientConnThreadProc(void* p)
 	pThis->m_pSocket = new SocketClient();
 	SocketClient* pSocketClient = (SocketClient*)pThis->m_pSocket;
 
-	pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
+	//TODO: move this in Send / Receive Files Thread
+	//pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
 
 	nError = pSocketClient->Create();
 	if (nError)
@@ -124,7 +122,8 @@ final:
 
 	if (!bOrderEnd)
 	{
-		pThis->m_transferThread.Start(Recv::ThreadProc, pThis);
+		//TODO: use other method
+		//pThis->m_transferThread.Start(Recv::ThreadProc, pThis);
 
 		//after the connection is succesful:
 		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
@@ -137,81 +136,53 @@ final:
 
 DWORD Worker::ServerConnThreadProc(void* p)
 {
-	Send* pThis = (Send*)p;
+	//Send* pThis = (Send*)p;
 
 	bOrderEnd = false;
 	int nError;
 
-	pThis->m_pSocket = new SocketServer();
-//	Recv::pSocket = new SocketServer();
-//	SocketServer* pRecvServer = (SocketServer*)Recv::pSocket;
-	SocketServer* pSendServer = (SocketServer*)pThis->m_pSocket;
-	pThis->m_dataTransferer.SetSocket(pThis->m_pSocket);
-
-	/*nError = pRecvServer->Create(14148);
-	if (nError)
-	{
-		DisplayError(nError);
-		goto final;
-	}*/
-
-	nError = pSendServer->Create(14147);
-	if (nError)
-	{
-		DisplayError(nError);
-		goto final;
-	}
-
-	////Listen
-	//nError = pRecvServer->Listen();
-	//if (nError)
-	//{
-	//	DisplayError(nError);
-	//	goto final;
-	//}
-
-	nError = pSendServer->Listen();
-	if (nError)
-	{
-		DisplayError(nError);
-		goto final;
-	}
-
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The Server is turned on and waiting for the client to connect.");
-
-	//Accept
-	/*if (!bOrderEnd)
-	{
-		nError = pRecvServer->Accept();
-		if (nError && !bOrderEnd)
-		{
-			DisplayError(nError);
-			goto final;
-		}
-	}*/
-
-	nError = pSendServer->Accept();
-	if (nError && !bOrderEnd)
-	{
-		DisplayError(nError);
-		goto final;
-	}
-
-final:
-	pThis->m_connectionThread.Close();
-	Connected = Conn::ConnAsServer;
-	
-	if (!bOrderEnd)
-	{
-		//TODO: why was Recv::thread started here?
-		//Recv::thread.Start(Recv::ThreadProc/*, theApp->GetMainWindow()*/);
-		pThis->m_transferThread.Start(Send::ThreadProc, pThis/*theApp->GetMainWindow()*/);
-		//Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, theApp->GetMainWindow(), 0, 0);
-
-		//after the connection is successful:
-		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
-		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
-	}
+	//TODO: use other method
+//	pThis->m_pSocket = new SocketServer();
+//	SocketServer* pSendServer = (SocketServer*)pThis->m_pSocket;
+//
+//	nError = pSendServer->Create(14147);
+//	if (nError)
+//	{
+//		DisplayError(nError);
+//		goto final;
+//	}
+//
+//	nError = pSendServer->Listen();
+//	if (nError)
+//	{
+//		DisplayError(nError);
+//		goto final;
+//	}
+//
+//	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"The Server is turned on and waiting for the client to connect.");
+//
+//	nError = pSendServer->Accept();
+//	if (nError && !bOrderEnd)
+//	{
+//		DisplayError(nError);
+//		goto final;
+//	}
+//
+//final:
+//	pThis->m_connectionThread.Close();
+//	Connected = Conn::ConnAsServer;
+//	
+//	if (!bOrderEnd)
+//	{
+//		//TODO: why was Recv::thread started here?
+//		//Recv::thread.Start(Recv::ThreadProc/*, theApp->GetMainWindow()*/);
+//		pThis->m_transferThread.Start(Send::ThreadProc, pThis/*theApp->GetMainWindow()*/);
+//		//Send::hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Send::ThreadProc, theApp->GetMainWindow(), 0, 0);
+//
+//		//after the connection is successful:
+//		SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the client has been established.");
+//		PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
+//	}
 	
 	return 0;
 }

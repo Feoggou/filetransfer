@@ -55,6 +55,13 @@ void Thread::Start()
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadFunc, this, 0, 0);
 }
 
+DWORD Thread::ThreadFunc(Thread* p)
+{
+	p->OnStart();
+
+	return 0;
+}
+
 void Thread::Close()
 {
 	if (m_hThread != INVALID_HANDLE_VALUE) {

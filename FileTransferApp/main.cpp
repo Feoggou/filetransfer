@@ -28,6 +28,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	UNREFERENCED_PARAMETER(nCmdShow);
 
+	MessageBox(0, L"The app is during refactoring, and is not functional yet. If you want something, check out the first commit(s)!", L"Hard luck!", 0);
+
 	try {
 		Application app(hInstance);
 

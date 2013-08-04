@@ -53,9 +53,9 @@ public:
 
 	~MainDlg(void) {}
 
-	//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
-	Socket* GetReceiveSocket();
-	Socket* GetSendSocket();
+	////TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
+	//Socket* GetReceiveSocket();
+	//Socket* GetSendSocket();
 
 	//PRIVATE FUNCTIONS
 private:
@@ -114,8 +114,4 @@ private:
 	void OnMinimized();
 	//TODO: split in two, based on path = NULL or not
 	void OnShowMessageBox(LPCWSTR message, LPCWSTR path);
-
-private:
-	Recv m_recv;
-	Send m_send;
 };

@@ -1,6 +1,8 @@
 #include "Application.h"
 #include "Exception.h"
 #include "MainDlg.h"
+#include "Socket.h"
+#include "Debug.h"
 
 #include "CRC.h"
 
@@ -218,13 +220,13 @@ std::wstring Application::GetLastFriend() const
 
 	return std::wstring(wsNick);
 }
-
-Socket* Application::GetReceiveSocket()
-{
-	return m_pMainDlg->GetReceiveSocket();
-}
-
-Socket* Application::GetSendSocket()
-{
-	return m_pMainDlg->GetSendSocket();
-}
+//
+//Socket* Application::GetReceiveSocket()
+//{
+//	return m_pMainDlg->GetReceiveSocket();
+//}
+//
+//Socket* Application::GetSendSocket()
+//{
+//	return m_pMainDlg->GetSendSocket();
+//}

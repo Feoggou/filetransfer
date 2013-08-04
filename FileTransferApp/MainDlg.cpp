@@ -330,8 +330,9 @@ void MainDlg::OnBrowse()
 
 	if (result)
 	{
-		if (Send::File.IsOpened())
-				Send::File.Close();
+		//No longer using files directly from MainDlg!
+		/*if (Send::File.IsOpened())
+				Send::File.Close();*/
 	}
 
 	switch (result)
@@ -355,24 +356,24 @@ void MainDlg::PickFile(HWND hDlg)
 	std::wstring result = FilePicker(hDlg)();
 
 	if (!result.empty()) {
-		//doing what we need with it.
-		Send::itemType = ItemType_File;
+		////doing what we need with it.
+		//Send::itemType = ItemType_File;
 
-		//retrieve the selected item (as path)
-		int len = result.length();
-		len++;
+		////retrieve the selected item (as path)
+		//int len = result.length();
+		//len++;
 
-		//we store the result in Send::wsParentFileName
-		if (Send::wsParentFileName) delete[] Send::wsParentFileName;
-		Send::wsParentFileName = new WCHAR[len];
-		StringCopy(Send::wsParentFileName, result.data());
+		////we store the result in Send::wsParentFileName
+		//if (Send::wsParentFileName) delete[] Send::wsParentFileName;
+		//Send::wsParentFileName = new WCHAR[len];
+		//StringCopy(Send::wsParentFileName, result.data());
 
-		//wsParentFileDisplayName SHOULD NOT BE DELETED: it is a pointer within Send::wsParentFileName
-		Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
-		Send::wsParentFileDisplayName++;
+		////wsParentFileDisplayName SHOULD NOT BE DELETED: it is a pointer within Send::wsParentFileName
+		//Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
+		//Send::wsParentFileDisplayName++;
 
 		//we set the full file name into the editbox and enable the "Send" and "Repair" buttons.
-		SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
+		SetWindowTextW(m_hEditItemPath, result.data());
 		EnableWindow(m_hButtonSend, true);
 		EnableWindow(m_hCheckRepairMode, false);
 	}
@@ -383,23 +384,23 @@ void MainDlg::PickFolder(HWND hDlg)
 	std::wstring result = FolderPicker(hDlg)();
 
 	if (!result.empty()) {
-		//ok, so the selection is ok. we fill the info
-		Send::itemType = ItemType_Folder;
-		int len = result.length();
-		len++;
+		////ok, so the selection is ok. we fill the info
+		//Send::itemType = ItemType_Folder;
+		//int len = result.length();
+		//len++;
 
-		//we store the file name into Send::wsParentFileName 
-		if (Send::wsParentFileName) delete[] Send::wsParentFileName;
-		Send::wsParentFileName = new WCHAR[len];
-		StringCopy(Send::wsParentFileName, result.data());
-		
-		//Send::wsParentFileDisplayName SHOULD NOT BE DELETED: it is only a pointer within Send::wsParentFileName
-		Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
-		if (Send::wsParentFileDisplayName)
-			Send::wsParentFileDisplayName++;
+		////we store the file name into Send::wsParentFileName 
+		//if (Send::wsParentFileName) delete[] Send::wsParentFileName;
+		//Send::wsParentFileName = new WCHAR[len];
+		//StringCopy(Send::wsParentFileName, result.data());
+		//
+		////Send::wsParentFileDisplayName SHOULD NOT BE DELETED: it is only a pointer within Send::wsParentFileName
+		//Send::wsParentFileDisplayName = StringRevChar(Send::wsParentFileName, '\\');
+		//if (Send::wsParentFileDisplayName)
+		//	Send::wsParentFileDisplayName++;
 
 		//we set the full file name into the editbox and enable the "Send" and "Repair" buttons.
-		SetWindowTextW(m_hEditItemPath, Send::wsParentFileName);
+		SetWindowTextW(m_hEditItemPath, result.data());
 		EnableWindow(m_hButtonSend, true);
 		EnableWindow(m_hCheckRepairMode, true);
 	}
@@ -412,29 +413,34 @@ void MainDlg::CloseAll()
 	//no data transfer is allowed anymore (this will deny Send::Thread and Recv::Thread from starting to transfer)
 	dwDataTransfer = 0;
 
-	//cleaning up
-	//receive
-	m_recv.CloseFile();
-	if (Recv::wsParentDisplayName) {delete[] Recv::wsParentDisplayName; Recv::wsParentDisplayName = 0;}
-	if (Recv::wsChildFileName) {delete[] Recv::wsChildFileName; Recv::wsChildFileName = NULL;}
+	//TODO:
+	//m_receiveWorker.Cleanup();
+	//m_sendWorker.Cleanup();
+	//TODO: should I use different classes, or ReceiveFilesThread and SendFilesThread?
 
-	//send
-	if (Send::File.IsOpened()) Send::File.Close();
-	if (Send::wsParentFileName) {delete[] Send::wsParentFileName; Send::wsParentFileName = NULL;}
+	////cleaning up
+	////receive
+	//m_recv.CloseFile();
+	//if (Recv::wsParentDisplayName) {delete[] Recv::wsParentDisplayName; Recv::wsParentDisplayName = 0;}
+	//if (Recv::wsChildFileName) {delete[] Recv::wsChildFileName; Recv::wsChildFileName = NULL;}
 
-	EnableWindow(m_hButtonSend, 0);
-	SetWindowTextW(m_hEditItemPath, L"");
+	////send
+	//if (Send::File.IsOpened()) Send::File.Close();
+	//if (Send::wsParentFileName) {delete[] Send::wsParentFileName; Send::wsParentFileName = NULL;}
 
-	//close the sockets BEFORE closing the threads!
-	int nError;
-	//if the socket was not already closed, we close it.
-	//we delete the pointer after the threads have closed only.
-	m_send.CloseSocket();
-	m_recv.CloseSocket();
+	//EnableWindow(m_hButtonSend, 0);
+	//SetWindowTextW(m_hEditItemPath, L"");
 
-	//these 2 must have been closed allready
-	m_recv.StopThreads();
-	m_send.StopThreads();
+	////close the sockets BEFORE closing the threads!
+	//int nError;
+	////if the socket was not already closed, we close it.
+	////we delete the pointer after the threads have closed only.
+	//m_send.CloseSocket();
+	//m_recv.CloseSocket();
+
+	////these 2 must have been closed allready
+	//m_recv.StopThreads();
+	//m_send.StopThreads();
 
 	//update the UI: it is possible that we do not close the program now.
 	UpdateUIDisconnected();
@@ -568,8 +574,9 @@ void MainDlg::ConnectToServer()
 	EnableWindow(m_hComboNickIP, false);
 	SetWindowTextW(m_hStatusText, L"The client is starting...");
 
-	//creating the connection
-	m_recv.StartConnThread(/*server*/ false);
+	//TODO: choose other method
+	////creating the connection
+	//m_recv.StartConnThread(/*server*/ false);
 }
 
 void MainDlg::CreateConnection()
@@ -586,8 +593,9 @@ void MainDlg::CreateConnection()
 	SetWindowTextW(m_hStatusText, L"The server is starting...");
 	SetWindowTextW(m_hComboNickIP, 0);
 
-	//creating connection
-	m_send.StartConnThread(/*server*/ true);
+	//TODO: choose other method
+	////creating connection
+	//m_send.StartConnThread(/*server*/ true);
 }
 
 void MainDlg::UpdateUIDisconnected()
@@ -626,13 +634,13 @@ void MainDlg::UpdateUIDisconnected()
 	Connected = Conn::NotConnected;
 }
 
-//TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
-Socket* MainDlg::GetReceiveSocket()
-{
-	return m_recv.GetSocket();
-}
-
-Socket* MainDlg::GetSendSocket()
-{
-	return m_send.GetSocket();
-}
+////TODO: remove socket retrieval later. Now we need them, because they're used everywhere.
+//Socket* MainDlg::GetReceiveSocket()
+//{
+//	return m_recv.GetSocket();
+//}
+//
+//Socket* MainDlg::GetSendSocket()
+//{
+//	return m_send.GetSocket();
+//}

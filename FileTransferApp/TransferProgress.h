@@ -7,7 +7,7 @@
 class TransferProgress
 {
 public:
-	TransferProgress(bool isSend, HWND hProgressBar);
+	TransferProgress(bool isSend, HWND hProgressBar, ItemType itemType);
 	~TransferProgress(void);
 
 	void UpdateFileTransferring();
@@ -65,5 +65,6 @@ private:
 	HWND			m_hProgressBar;
 
 	std::wstring	m_fileName;
+	ItemType		m_itemType;
 };
 

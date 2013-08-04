@@ -1,6 +1,7 @@
 #include "SocketClient.h"
 #include "General.h"
 #include "MainDlg.h"
+#include "Debug.h"
 
 #include "Application.h"
 
@@ -252,72 +253,75 @@ int SocketClient::Close(void)
 
 BOOL SocketClient::Reconnect()
 {
-	if (bOrderEnd) return FALSE;
-	int nError;
+	return false;
+	//TODO: fix later!
 
-	Connected = Conn::NotConnected;
-
-	int port = 14147;
-	SocketClient* pClient = (SocketClient*)theApp->GetReceiveSocket();
-	if (!pClient) {
-		pClient = (SocketClient*)theApp->GetSendSocket();
-		ASSERT(pClient);
-
-		port = 14148;
-	}
-
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been lost. Trying to reconnect.");
-
-	nError = pClient->Close();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
-	nError = pClient->Create();
-	if (nError)
-	{
-		DisplayError(nError);
-		return false;
-	}
-
-	//Connect
-try_again:
-	nError = pClient->Connect(port);
-	if (nError && !bOrderEnd)
-	{
-		Sleep(200);
-		goto try_again;
-	}; 
-
-	if (bOrderEnd) return false;
-
-	DWORD dwValue = 1;
-	nError = ioctlsocket(pClient->m_Server, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
-
-	char buffer[4];
-	while (recv(pClient->m_Server, buffer, 4, 0) > 0);
-
-	dwValue = 0;
-	nError = ioctlsocket(pClient->m_Server, FIONBIO, &dwValue);
-	if (nError != 0)
-	{
-		return false;//WSAGetLastError();
-	}
-
-	Connected = Conn::ConnAsClient;
-
-	//after the connection is succesful:
-	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
-	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 1);
-	
-	return true;
+//	if (bOrderEnd) return FALSE;
+//	int nError;
+//
+//	Connected = Conn::NotConnected;
+//
+//	int port = 14147;
+//	SocketClient* pClient = (SocketClient*)theApp->GetReceiveSocket();
+//	if (!pClient) {
+//		pClient = (SocketClient*)theApp->GetSendSocket();
+//		ASSERT(pClient);
+//
+//		port = 14148;
+//	}
+//
+//	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 0);
+//	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 0);
+//	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been lost. Trying to reconnect.");
+//
+//	nError = pClient->Close();
+//	if (nError)
+//	{
+//		DisplayError(nError);
+//		return false;
+//	}
+//
+//	nError = pClient->Create();
+//	if (nError)
+//	{
+//		DisplayError(nError);
+//		return false;
+//	}
+//
+//	//Connect
+//try_again:
+//	nError = pClient->Connect(port);
+//	if (nError && !bOrderEnd)
+//	{
+//		Sleep(200);
+//		goto try_again;
+//	}; 
+//
+//	if (bOrderEnd) return false;
+//
+//	DWORD dwValue = 1;
+//	nError = ioctlsocket(pClient->m_Server, FIONBIO, &dwValue);
+//	if (nError != 0)
+//	{
+//		return false;//WSAGetLastError();
+//	}
+//
+//	char buffer[4];
+//	while (recv(pClient->m_Server, buffer, 4, 0) > 0);
+//
+//	dwValue = 0;
+//	nError = ioctlsocket(pClient->m_Server, FIONBIO, &dwValue);
+//	if (nError != 0)
+//	{
+//		return false;//WSAGetLastError();
+//	}
+//
+//	Connected = Conn::ConnAsClient;
+//
+//	//after the connection is succesful:
+//	SendMessage(MainDlg::m_hStatusText, WM_SETTEXT, 0, (LPARAM)L"Connection to the server has been established.");
+//	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonBrowse, 1);
+//	PostMessage(theApp->GetMainWindow(), WM_ENABLECHILD, (WPARAM)MainDlg::m_hButtonSend, 1);
+//	
+//	return true;
 }

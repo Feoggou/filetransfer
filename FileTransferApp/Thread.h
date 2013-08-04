@@ -5,6 +5,8 @@
 #include "File.h"
 #include "TransferProgress.h"
 
+#include <string>
+
 class Thread
 {
 public:
@@ -49,7 +51,9 @@ public:
 		: m_dataTransferer(),
 		m_pSocket(nullptr),
 		m_pFile(nullptr),
-		m_transferProgress(!is_receive, hProgressBar)
+		m_transferProgress(!is_receive, hProgressBar, ItemType_File),//TODO: change ItemType_File
+		m_bModeRepair(false),
+		m_itemType(ItemType_File)
 	{}
 
 protected:
@@ -57,4 +61,10 @@ protected:
 	File*				m_pFile;
 	TransferProgress	m_transferProgress;
 	Socket*				m_pSocket;
+	ItemType			m_itemType;
+
+	std::wstring		m_wsParentDisplayName;
+	std::wstring		m_wsChildFileName;
+
+	bool				m_bModeRepair;
 };
